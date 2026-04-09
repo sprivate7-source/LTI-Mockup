@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — 보험처리</title>
+  <link rel="stylesheet" href="../common/style.css">
+  <link rel="stylesheet" href="../common/tab-bar.css">
+  <style>
+    /* 보험처리 탭 전용 스타일 없음 — 공통 CSS로 충분 */
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <div class="header">
+    <a href="../01_현장상세.html" class="header-back" aria-label="뒤로가기">&#8249;</a>
+    <div class="header-title">아랫집 피해복구</div>
+    <div class="header-action"></div>
+  </div>
+
+  <!-- 탭 바 -->
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="sub-tab-bar" id="sub-tab-bar"></div>
+
+  <!-- 페이지 콘텐츠 -->
+  <div class="page-tab has-sub-tabs">
+
+    <!-- 서브: 담당자정보 -->
+    <div id="sub-approval-담당자정보">
+
+      <!-- 보험사 정보 -->
+      <div class="card mb-16">
+        <div class="card-title">보험사 정보</div>
+        <div class="form-group">
+          <label class="form-label">보험사명</label>
+          <select class="form-select" id="insurance-company">
+            <option value="">선택하세요</option>
+            <option value="samsung">삼성화재</option>
+            <option value="hyundai">현대해상</option>
+            <option value="db">DB손해보험</option>
+            <option value="kb">KB손해보험</option>
+            <option value="meritz">메리츠화재</option>
+            <option value="hanwha">한화손해보험</option>
+            <option value="heungkuk">흥국화재</option>
+            <option value="lotte">롯데손해보험</option>
+            <option value="mg">MG손해보험</option>
+            <option value="other">기타</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">사고접수번호</label>
+          <input class="form-input" type="text" placeholder="보험사 접수번호 입력">
+        </div>
+        <div class="form-group">
+          <label class="form-label">보험 종류</label>
+          <select class="form-select">
+            <option value="">선택하세요</option>
+            <option value="ilbae">일상생활배상책임보험</option>
+            <option value="imdae">임대인배상책임보험</option>
+            <option value="hwajae">화재보험 (특약)</option>
+            <option value="danche">단체보험 (관리사무소)</option>
+            <option value="other">기타</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:12px;">
+          <div class="form-group" style="flex:1; margin-bottom:0;">
+            <label class="form-label">자기부담금</label>
+            <select class="form-select">
+              <option value="">선택</option>
+              <option value="0">없음 (0원)</option>
+              <option value="200000">20만원</option>
+              <option value="500000">50만원</option>
+              <option value="other">기타</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1; margin-bottom:0;">
+            <label class="form-label">중복가입 여부</label>
+            <select class="form-select">
+              <option value="">선택</option>
+              <option value="no">없음</option>
+              <option value="yes">있음 (가족 추가)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 손해사정사 정보 -->
+      <div class="card mb-16">
+        <div class="card-title">손해사정사 정보</div>
+        <div class="form-group">
+          <label class="form-label">사정 유형</label>
+          <div style="display:flex; gap:8px;">
+            <label style="flex:1; display:flex; align-items:center; gap:8px; padding:12px 16px; border:1.5px solid var(--gray-200); border-radius:10px; cursor:pointer;">
+              <input type="radio" name="adjuster-type" value="internal" style="width:20px;height:20px;accent-color:var(--primary);">
+              <span style="font-size:0.9375rem;">보험사 직원</span>
+            </label>
+            <label style="flex:1; display:flex; align-items:center; gap:8px; padding:12px 16px; border:1.5px solid var(--gray-200); border-radius:10px; cursor:pointer;">
+              <input type="radio" name="adjuster-type" value="external" style="width:20px;height:20px;accent-color:var(--primary);">
+              <span style="font-size:0.9375rem;">외부 위탁 법인</span>
+            </label>
+          </div>
+          <div class="alert alert-warning mt-12" id="external-warning" style="display:none;">
+            외부 위탁 손해사정사는 삭감 가능성이 높습니다. 방어 모드를 준비하세요.
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">담당자 이름 <span class="required">*</span></label>
+          <input class="form-input" type="text" id="adjuster-name" placeholder="손해사정사 이름">
+        </div>
+        <div class="form-group">
+          <label class="form-label">전화번호 <span class="required">*</span></label>
+          <input class="form-input" type="tel" id="adjuster-phone" placeholder="010-0000-0000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">이메일</label>
+          <input class="form-input" type="email" id="adjuster-email" placeholder="email@example.com">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">소속 법인/회사</label>
+          <input class="form-input" type="text" placeholder="예: ○○손해사정 주식회사">
+        </div>
+      </div>
+
+      <!-- 자격확인 -->
+      <div class="status-row" onclick="LTI.toast('목업: 금감원 등록 손해사정사 자격 확인')">
+        <div class="status-icon pending">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="status-body">
+          <div class="status-title">손해사정사 자격 확인</div>
+          <div class="status-value">금감원 등록 여부 조회 (압박 도구)</div>
+        </div>
+        <span class="badge badge-info" style="font-size:0.75rem;">조회</span>
+      </div>
+
+    </div>
+
+    <!-- 서브: 견적서발송 -->
+    <div id="sub-approval-견적서발송" style="display:none;">
+
+      <!-- 발송 조건 체크 -->
+      <div class="card mb-16">
+        <div class="card-title">발송 전 확인</div>
+
+        <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--gray-100);">
+          <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.875rem;" id="chk-estimate-icon" class="status-icon pending">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+          <span style="font-size:1rem;" id="chk-estimate-text">견적서 작성 완료</span>
+          <span class="status-badge pending" style="margin-left:auto;" id="chk-estimate-badge">미완료</span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--gray-100);">
+          <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.875rem;" id="chk-sign-icon" class="status-icon pending">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+          <span style="font-size:1rem;" id="chk-sign-text">고객 위임장 서명 완료</span>
+          <span class="status-badge pending" style="margin-left:auto;" id="chk-sign-badge">미완료</span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:12px; padding:12px 0;">
+          <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.875rem;" id="chk-adjuster-icon" class="status-icon pending">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+          <span style="font-size:1rem;" id="chk-adjuster-text">손해사정사 정보 입력</span>
+          <span class="status-badge pending" style="margin-left:auto;" id="chk-adjuster-badge">미완료</span>
+        </div>
+      </div>
+
+      <!-- 이의기한 설정 -->
+      <div class="card mb-16">
+        <div class="card-title">이의기한 설정</div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">이의 제기 기한</label>
+          <select class="form-select" id="objection-days">
+            <option value="3">발송일로부터 3일 이내</option>
+            <option value="5" selected>발송일로부터 5일 이내</option>
+            <option value="7">발송일로부터 7일 이내</option>
+            <option value="10">발송일로부터 10일 이내</option>
+          </select>
+          <div style="font-size:0.8125rem; color:var(--gray-500); margin-top:8px;">
+            ※ 기한 내 이의 없으면 견적 승인으로 간주됩니다
+          </div>
+        </div>
+      </div>
+
+      <!-- 발송 방법 -->
+      <div class="card mb-16">
+        <div class="card-title">발송 방법</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <label style="display:flex; align-items:center; gap:8px; padding:12px 16px; border:1.5px solid var(--gray-200); border-radius:10px; cursor:pointer; flex:1; min-width:140px;">
+            <input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--primary);">
+            <span style="font-size:0.9375rem;">이메일</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; padding:12px 16px; border:1.5px solid var(--gray-200); border-radius:10px; cursor:pointer; flex:1; min-width:140px;">
+            <input type="checkbox" style="width:20px;height:20px;accent-color:var(--primary);">
+            <span style="font-size:0.9375rem;">카카오톡</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; padding:12px 16px; border:1.5px solid var(--gray-200); border-radius:10px; cursor:pointer; flex:1; min-width:140px;">
+            <input type="checkbox" style="width:20px;height:20px;accent-color:var(--primary);">
+            <span style="font-size:0.9375rem;">팩스(eFax)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 발송 미리보기 -->
+      <div class="card mb-16" style="background:var(--gray-50);">
+        <div class="card-title">발송 내용 미리보기</div>
+        <div style="font-size:0.9375rem; color:var(--gray-600); line-height:1.8; padding:12px 16px; background:white; border-radius:8px; border:1px solid var(--gray-200);">
+          <strong>제목:</strong> [리크튜브] 누수 피해복구 공사 견적서 선승인 요청<br><br>
+          안녕하세요, 리크튜브 <span style="color:var(--primary);">(업체명)</span>입니다.<br><br>
+          아래 현장의 누수 피해복구 공사 견적서를 발송드립니다.<br>
+          <strong>현장:</strong> <span style="color:var(--primary);">서울특별시 강남구 테헤란로 123</span><br>
+          <strong>견적 금액:</strong> <span style="color:var(--primary);">합계금액</span><br>
+          <strong>이의기한:</strong> <span style="color:var(--danger);">발송일로부터 5일 이내</span><br><br>
+          기한 내 별도 이의가 없을 경우 본 견적에 따라 공사를 진행하겠습니다.<br><br>
+          <em style="color:var(--gray-400);">— 첨부: 견적서 PDF, 위임장 사본, 피해현장 사진 대지</em>
+        </div>
+      </div>
+
+      <!-- 발송 버튼 -->
+      <button class="btn btn-primary btn-full btn-lg" id="send-estimate-btn" onclick="sendEstimate()" disabled>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        견적서 발송하기
+      </button>
+      <div style="font-size:0.8125rem; color:var(--gray-400); text-align:center; margin-top:8px;">
+        위 3개 조건이 모두 충족되어야 발송할 수 있습니다
+      </div>
+
+      <!-- 발송 이력 -->
+      <div style="margin-top:24px;">
+        <div style="font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:12px;">발송 이력</div>
+        <div id="send-history" style="text-align:center; padding:24px; color:var(--gray-400); font-size:0.9375rem;">
+          아직 발송 이력이 없습니다
+        </div>
+      </div>
+
+      <!-- 회신 상태 -->
+      <div style="margin-top:20px;">
+        <div style="font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:12px;">회신 상태</div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-sm btn-secondary" style="flex:1;" onclick="setReplyStatus('waiting')">대기중</button>
+          <button class="btn btn-sm btn-success" style="flex:1;" onclick="setReplyStatus('approved')">승인</button>
+          <button class="btn btn-sm" style="flex:1; background:var(--warning); color:white;" onclick="setReplyStatus('partial')">부분삭감</button>
+          <button class="btn btn-sm btn-danger" style="flex:1;" onclick="setReplyStatus('rejected')">거부</button>
+        </div>
+        <div id="reply-status-msg" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- ===== 삭감 방어 가이드 ===== -->
+      <div style="margin-top:28px;">
+        <div style="font-size:1.125rem; font-weight:700; color:var(--gray-800); margin-bottom:14px;">
+          🛡️ 삭감 방어 가이드
+        </div>
+
+        <!-- 가이드 1: 손해사정서 교부요청 -->
+        <div class="card mb-12" style="border-left:4px solid var(--danger);">
+          <div style="font-size:1rem; font-weight:700; color:var(--danger); margin-bottom:8px;">가장 강력한 카드 — 손해사정서 정식 교부 요청</div>
+          <div style="font-size:0.9375rem; color:var(--gray-600); line-height:1.7; margin-bottom:12px;">
+            손해사정사가 근거 없이 삭감하면, 정식 서류로 남기라고 요구하세요. 이것을 가장 두려워합니다.
+          </div>
+          <div style="background:var(--gray-50); border-radius:8px; padding:14px; font-size:0.875rem; color:var(--gray-700); line-height:1.7; font-style:italic;">
+            "삭감하시려면, 삭감되는 정확한 항목과 법적/약관상 근거가 명시된 <strong>'손해사정서 정식 사본'</strong>을 고객과 저희에게 발송해 주십시오. 금융감독원 민원을 통해 삭감의 타당성을 검토하겠습니다."
+          </div>
+        </div>
+
+        <!-- 가이드 2: 제경비 삭감 -->
+        <div class="card mb-12">
+          <div style="font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:8px;">보양비·폐기물비 삭감당할 때</div>
+          <div style="font-size:0.875rem; color:var(--gray-500); margin-bottom:10px;">
+            ⚠️ "제경비", "부대비용" 단어 절대 사용 금지 → 세부 항목으로 쪼개세요
+          </div>
+          <div style="font-size:0.9375rem; color:var(--gray-600); line-height:1.7; margin-bottom:12px;">
+            <strong>세분화 방법:</strong><br>
+            ✕ 제경비 45만원<br>
+            ✓ 보양 자재비(마스킹 테이프 등) 5만원 + 보통인부 0.5품 15만원<br>
+            ✓ 폐기물 스티커 실비 5만원 + 반출 보통인부 노임 20만원
+          </div>
+          <div style="background:var(--gray-50); border-radius:8px; padding:14px; font-size:0.875rem; color:var(--gray-700); line-height:1.7; font-style:italic;">
+            "살림살이가 다 있는 거주 중인 집입니다. 보양 없이 작업해서 고객 가전에 분진 피해가 발생하면, 손해사정사님이 그 배상금을 전액 책임지실 겁니까? 확약서 써주시면 보양비 빼고 작업하겠습니다."
+          </div>
+        </div>
+
+        <!-- 가이드 3: 부분 시공 강요 -->
+        <div class="card mb-12">
+          <div style="font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:8px;">부분 시공만 하라고 할 때</div>
+          <div style="font-size:0.9375rem; color:var(--gray-600); line-height:1.7; margin-bottom:12px;">
+            <strong>3가지 반박 논리:</strong><br>
+            1. <strong>자재 단종 확인서</strong> — 제조사/대리점에서 단종 확인 받기 (가장 강력)<br>
+            2. <strong>이색 발생</strong> — 기존 자재와 색상 차이로 원상복구 위배<br>
+            3. <strong>구조적 특수성</strong> — 문턱 없는 구조에 재료분리대 설치는 미관 훼손
+          </div>
+          <div style="background:var(--gray-50); border-radius:8px; padding:14px; font-size:0.875rem; color:var(--gray-700); line-height:1.7; font-style:italic;">
+            "비슷한 자재로 시공했다가 고객이 완벽한 원상복구가 아니라고 클레임 걸면, 귀사에서 전액 뜯어내고 재시공 비용을 책임지겠다는 확약서를 써주십시오."
+          </div>
+        </div>
+
+        <!-- 가이드 4: 부가세 제외 요구 -->
+        <div class="card mb-12">
+          <div style="font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:8px;">부가세 빼고 입금하겠다고 할 때</div>
+          <div style="font-size:0.9375rem; color:var(--gray-600); line-height:1.7; margin-bottom:12px;">
+            일반 주거용(아파트/빌라)은 부가세 10% 전액 지급이 원칙입니다. 피해자가 환급받을 길이 없으므로 부가세도 실제 손해입니다.
+          </div>
+          <div style="background:var(--gray-50); border-radius:8px; padding:14px; font-size:0.875rem; color:var(--gray-700); line-height:1.7; font-style:italic;">
+            "지금 저희한테 무자료 거래(탈세)를 하라고 요구하시는 겁니까? 서면으로 부가세 지급 거부 사유를 작성하여 보내주시면, 국세청 탈세 제보와 금감원 민원으로 법적 판단을 받겠습니다."
+          </div>
+        </div>
+
+        <!-- 가이드 5: 소면적 할인 -->
+        <div class="card mb-12">
+          <div style="font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:8px;">소면적이니 평당 계산하라고 할 때</div>
+          <div style="font-size:0.9375rem; color:var(--gray-600); line-height:1.7; margin-bottom:12px;">
+            장비 세팅·운반·보양은 3평이나 15평이나 동일하게 최소 반나절 소요됩니다. 평당 단가가 아닌 <strong>기본요금(최소 출장비)</strong>을 적용하세요.
+          </div>
+          <div style="background:var(--gray-50); border-radius:8px; padding:14px; font-size:0.875rem; color:var(--gray-700); line-height:1.7;">
+            <strong>예시:</strong> 강마루 철거 및 바닥 샌딩비: 350,000원<br>
+            (비고: 소면적 작업으로 인한 장비대 및 기술자 최소 출장 기본 노임 적용)
+          </div>
+        </div>
+
+        <!-- 가이드 6: 단가 깎기 -->
+        <div class="card mb-12">
+          <div style="font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:8px;">연계 업체 단가로 맞추라고 할 때</div>
+          <div style="background:var(--gray-50); border-radius:8px; padding:14px; font-size:0.875rem; color:var(--gray-700); line-height:1.7; font-style:italic;">
+            "그건 보험사와 하청 계약을 맺은 연계 업체 내부 규정이지, 고객과 직접 계약한 독립 업체가 따를 의무는 없습니다. 통상적인 시장 단가와 실제 투입되는 품수에 맞춘 견적입니다."
+          </div>
+        </div>
+
+        <!-- 가이드 7: 최후의 수단 -->
+        <div class="card" style="border:2px solid var(--danger); background:var(--danger-bg);">
+          <div style="font-size:1rem; font-weight:700; color:var(--danger); margin-bottom:8px;">최후의 수단 — 채권양도통지</div>
+          <div style="font-size:0.9375rem; color:var(--gray-600); line-height:1.7;">
+            보험사가 직불(위임장)을 끝까지 거부할 때, 아랫집의 보험금 수령 권리를 업체에 정식 양도하는 <strong>내용증명</strong>을 우체국에서 발송합니다. 위임장보다 법적 구속력이 강합니다.
+          </div>
+        </div>
+      </div>
+
+      <!-- 담당자 협의 내용 -->
+      <div style="margin-top:24px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <span style="font-size:1rem; font-weight:700; color:var(--gray-800);">담당자 협의 내용</span>
+          <button class="btn btn-sm btn-outline" onclick="showMemoForm()">+ 추가</button>
+        </div>
+        <div id="memo-form" style="display:none; margin-bottom:12px;">
+          <textarea class="form-textarea" id="memo-input" rows="3" placeholder="협의 내용을 입력하세요 (예: 도배 단가 3만원→2.8만원 합의, 보양비 인정 확인)"></textarea>
+          <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+            <button class="btn btn-sm btn-secondary" onclick="hideMemoForm()">취소</button>
+            <button class="btn btn-sm btn-primary" onclick="addMemo()">저장</button>
+          </div>
+        </div>
+        <div id="memo-list" style="text-align:center; padding:16px; color:var(--gray-400); font-size:0.9375rem;">
+          아직 협의 내용이 없습니다
+        </div>
+      </div>
+
+      <div style="height:32px;"></div>
+    </div>
+
+    <!-- 서브: 피해사진 (피해사진.html로 이동) -->
+    <div id="sub-approval-피해사진" style="display:none;">
+      <div class="alert alert-info mb-16">
+        피해사진은 <strong>보험 처리 전 단계부터 공사 완료까지</strong> 모든 시점의 사진을 등록합니다.<br>
+        피해 현장 → 공사 중(보양/철거/시공/마감) → 완료 후 사진을 시간순으로 기록하세요.
+      </div>
+      <a href="피해사진.html" class="btn btn-primary btn-full btn-lg">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        피해사진 등록/관리 열기
+      </a>
+    </div>
+
+    <!-- 서브: 완료확인서 -->
+    <div id="sub-approval-완료확인서" style="display:none;">
+
+      <div class="alert alert-info mb-16">
+        보험금을 받으려면 아래 <strong>7종 서류가 모두 완료</strong>되어야 합니다.<br>
+        각 단계가 완료되면 자동으로 활성화됩니다.
+      </div>
+
+      <!-- 서류 리스트 (미리보기 아이콘 포함) -->
+      <div id="doc-list-container"></div>
+
+      <!-- 완료 상태 요약 -->
+      <div class="card mt-20" id="doc-summary" style="border-color:var(--gray-300);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:1rem; font-weight:700; color:var(--gray-800);">서류 완료 현황</span>
+          <span style="font-size:1.25rem; font-weight:700;" id="doc-count-text">1 / 7</span>
+        </div>
+        <div style="width:100%; height:8px; background:var(--gray-200); border-radius:4px; margin-top:10px; overflow:hidden;">
+          <div style="height:100%; background:var(--primary); border-radius:4px; transition:width 0.3s;" id="doc-progress"></div>
+        </div>
+        <div style="font-size:0.8125rem; color:var(--gray-500); margin-top:8px;" id="doc-summary-text">
+          모든 서류가 완료되면 보험청구를 진행할 수 있습니다.
+        </div>
+      </div>
+
+      <!-- 보험청구 진행 버튼 -->
+      <button class="btn btn-primary btn-full btn-lg mt-20" id="claim-btn" onclick="submitClaim()" disabled>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        보험청구 진행 (PDF 발송)
+      </button>
+      <div style="font-size:0.8125rem; color:var(--gray-400); text-align:center; margin-top:6px;" id="claim-btn-hint">
+        7종 서류 모두 완료 시 활성화됩니다
+      </div>
+
+      <!-- 데모 버튼 -->
+      <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-sm btn-secondary" onclick="demoDocAll()">데모: 전체 완료</button>
+        <button class="btn btn-sm btn-secondary" onclick="demoDocReset()">데모: 초기화</button>
+      </div>
+
+      <div style="height:32px;"></div>
+    </div>
+
+    <!-- 서브: 보험청구 -->
+    <div id="sub-approval-보험청구" style="display:none;">
+
+      <div id="claim-empty">
+        <div class="tab-placeholder">
+          <div class="tab-placeholder-icon">📤</div>
+          <div class="tab-placeholder-title">보험 청구 내역</div>
+          <div class="tab-placeholder-desc">완료확인서 탭에서 보험청구를 진행하면<br>청구 내역이 여기에 표시됩니다.</div>
+        </div>
+      </div>
+
+      <div id="claim-result" style="display:none;">
+        <div class="alert alert-success mb-12">
+          <strong>보험 청구가 완료되었습니다!</strong><br>
+          담당 손해사정사에게 PDF 서류가 발송되었습니다.
+        </div>
+        <div class="alert alert-warning mb-16" style="font-size:0.875rem;">
+          🔒 <strong>신분증 정보가 서버에서 즉시 삭제되었습니다.</strong><br>
+          개인정보처리방침에 따라 보험 청구 발송 완료 후 신분증 데이터는 지체 없이 폐기됩니다.
+        </div>
+
+        <div class="card mb-12">
+          <div class="card-title">청구 정보</div>
+          <div style="font-size:0.9375rem; color:var(--gray-600); line-height:2;">
+            <div style="display:flex; justify-content:space-between;">
+              <span>청구일시</span>
+              <strong id="claim-date">-</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span>현장 주소</span>
+              <strong>서울특별시 강남구 테헤란로 123</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span>아랫집</span>
+              <strong>102동 1201호</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span>피해자</span>
+              <strong>홍길동 (010-9876-5432)</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span>청구 금액</span>
+              <strong style="color:var(--primary);">합계금액 (견적서 기준)</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span>보험사</span>
+              <strong>삼성화재</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span>담당 손해사정사</span>
+              <strong>김사정 (kim@example.com)</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-12">
+          <div class="card-title">발송된 서류 (PDF 병합)</div>
+          <div style="font-size:0.9375rem; color:var(--gray-600); line-height:2;">
+            ✅ ① 위임장 + 신분증 사본<br>
+            ✅ ② 공사 완료 확인서 (고객 서명)<br>
+            ✅ ③ 최종 세부 청구서 (견적서)<br>
+            ✅ ④ 피해현장 사진 대지<br>
+            ⬜ ⑤ 실비 지출 영수증 (선택)<br>
+            ✅ ⑥ 사업자등록증 + 통장사본<br>
+            ✅ ⑦ 현금영수증/세금계산서 증빙
+          </div>
+        </div>
+
+        <div class="card" style="background:var(--gray-50);">
+          <div style="font-size:0.8125rem; color:var(--gray-500); line-height:1.6;">
+            ※ 본 청구서는 조세특례제한법을 준수하며, 어떠한 형태의 무자료 현금 거래(부가세 제외) 요구도 거절합니다.<br>
+            ※ 적격 증빙(세금계산서/현금영수증)이 피해 세대 명의로 정식 발행되었습니다.
+          </div>
+        </div>
+
+        <!-- 진행 타임라인 로그 -->
+        <div style="margin-top:28px;">
+          <div style="font-size:1.125rem; font-weight:700; color:var(--gray-800); margin-bottom:16px;">진행 타임라인</div>
+          <div id="timeline-log" style="border-left:3px solid var(--gray-200); margin-left:12px; padding-left:20px;"></div>
+        </div>
+      </div>
+
+      <div style="height:32px;"></div>
+    </div>
+
+  </div>
+
+  <script src="../common/components.js"></script>
+  <script src="../common/tab-bar.js"></script>
+  <script>
+    // 탭 바 렌더링
+    renderTabBar('approval', '담당자정보');
+
+    // 서브탭별 기능 목록
+    const SUB_FEATURES = {
+      '담당자정보': [
+        { text: '보험사명, 사고접수번호, 보험종류, 자기부담금, 중복가입 여부 입력' },
+        { text: '손해사정사 이름, 전화번호, 이메일, 소속 입력' },
+        { text: '사정 유형 선택 — 외부 위탁 시 삭감 경고 표시' },
+        { text: '금감원 등록 손해사정사 자격 조회 (압박 도구)' },
+      ],
+      '견적서발송': [
+        { text: '3개 조건 충족 시 발송 가능 (견적완료+위임장서명+담당자정보)' },
+        { text: '이의기한 설정 (3/5/7/10일), 기한 내 이의 없으면 승인 간주' },
+        { text: '이메일/카카오톡/팩스 발송 방법 선택' },
+        { text: '발송 이력 기록 + 회신 상태 관리 (승인/부분삭감/거부)' },
+        { text: '담당자 협의 내용 추가 — 전화/대면 협의 결과 기록 → 보험청구 타임라인에 반영' },
+        { text: '삭감 방어 가이드 7개 — 현장에서 바로 참고 가능한 실무 멘트' },
+      ],
+      '피해사진': [
+        { text: '피해 현장 ~ 공사 완료까지 모든 시점의 사진을 시간순으로 등록' },
+        { text: '보양/철거/시공/마감 단계별 사진도 여기에 통합 관리' },
+        { text: '촬영 + 갤러리 등록, 타임스탬프 자동, 화살표 주석 옵션' },
+      ],
+      '완료확인서': [
+        { text: '7종 서류 체크리스트 — 각 단계 완료 시 자동 활성화' },
+        { text: '①위임장+신분증 ②완료확인서(서명) ③견적서 ④피해현장 사진 대지 ⑤영수증(선택) ⑥사업자등록증 ⑦세금계산서' },
+        { text: '각 서류 옆 👁 미리보기 아이콘 → 새창에서 확인 + 수정/완료 버튼' },
+        { text: '⑤ 실비 영수증은 선택 사항 — 없어도 보험청구 진행 가능' },
+        { text: '필수 서류 완료 → 하단 "보험청구 진행" 버튼 활성화 → PDF 병합 발송' },
+        { text: '⚠️ 보험청구 발송 완료 후 신분증 정보 즉시 폐기 (서버에서 삭제)' },
+      ],
+      '보험청구': [
+        { text: '청구 정보 — 청구일시, 현장주소, 피해자 정보, 보험사, 담당자' },
+        { text: '발송된 7종 서류 목록 확인' },
+        { text: '진행 타임라인 — 피해현장 등록부터 보험청구까지 전체 이력' },
+        { text: '담당자 협의 내용도 타임라인에 포함' },
+        { text: '이 페이지만 보면 전체 진행 과정을 한눈에 파악 가능' },
+      ],
+    };
+
+    function renderSubFeatures(sub) {
+      const existing = document.querySelector('.feature-panel');
+      if (existing) existing.remove();
+      LTI.renderFeaturePanel({
+        target: '.page-tab',
+        features: SUB_FEATURES[sub] || [{ text: '대표님 협의 후 제작 예정' }],
+      });
+    }
+    renderSubFeatures('담당자정보');
+
+    // ===== 서브탭 전환 =====
+    function onSubTabClick(sub) {
+      // 서브탭 버튼 활성화 갱신
+      renderTabBar('approval', sub);
+
+      // 콘텐츠 전환
+      ['담당자정보', '견적서발송', '피해사진', '완료확인서', '보험청구'].forEach(s => {
+        const el = document.getElementById('sub-approval-' + s);
+        if (el) el.style.display = (s === sub) ? 'block' : 'none';
+      });
+
+      if (sub === '견적서발송') updateSendConditions();
+      renderSubFeatures(sub);
+    }
+
+    // ===== 외부 위탁 경고 =====
+    document.querySelectorAll('input[name="adjuster-type"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        document.getElementById('external-warning').style.display =
+          this.value === 'external' ? 'block' : 'none';
+      });
+    });
+
+    // ===== 발송 조건 체크 =====
+    // 목업이므로 조건은 항상 미충족 상태 (독립 페이지이므로 cross-page state 없음)
+    let estimateReady = false;
+    let signReady = false;
+
+    function updateSendConditions() {
+      const adjOk = document.getElementById('adjuster-name') && document.getElementById('adjuster-name').value.trim() !== '';
+
+      setCondition('chk-estimate', estimateReady);
+      setCondition('chk-sign', signReady);
+      setCondition('chk-adjuster', adjOk);
+
+      document.getElementById('send-estimate-btn').disabled = !(estimateReady && signReady && adjOk);
+    }
+
+    function setCondition(prefix, ok) {
+      const icon = document.getElementById(prefix + '-icon');
+      const badge = document.getElementById(prefix + '-badge');
+      if (ok) {
+        icon.className = 'status-icon done';
+        icon.style.background = 'var(--success)';
+        icon.style.color = 'white';
+        badge.className = 'status-badge done';
+        badge.textContent = '완료';
+      } else {
+        icon.className = 'status-icon pending';
+        icon.style.background = 'var(--gray-200)';
+        icon.style.color = 'var(--gray-500)';
+        badge.className = 'status-badge pending';
+        badge.textContent = '미완료';
+      }
+    }
+
+    function sendEstimate() {
+      const now = LTI.formatNow();
+      const days = document.getElementById('objection-days').value;
+      LTI.confirm({
+        title: '견적서 발송',
+        message: '손해사정사에게 견적서를 발송하시겠습니까?<br><br>이의기한: 발송일로부터 ' + days + '일 이내',
+        confirmText: '발송',
+        cancelText: '취소',
+        onConfirm: function() {
+          const history = document.getElementById('send-history');
+          history.innerHTML = `
+            <div style="text-align:left; padding:12px 16px; background:white; border-radius:10px; border:1px solid var(--gray-200);">
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span style="font-weight:600; color:var(--gray-800);">1차 발송</span>
+                <span class="badge badge-success" style="font-size:0.75rem;">발송완료</span>
+              </div>
+              <div style="font-size:0.8125rem; color:var(--gray-500); line-height:1.6;">
+                일시: ${now}<br>
+                방법: 이메일<br>
+                이의기한: ${days}일
+              </div>
+            </div>
+          `;
+          LTI.toast('견적서가 발송되었습니다');
+        }
+      });
+    }
+
+    function setReplyStatus(status) {
+      const msg = document.getElementById('reply-status-msg');
+      const labels = { waiting: '대기중', approved: '승인', partial: '부분삭감', rejected: '거부' };
+      const colors = { waiting: 'var(--gray-500)', approved: 'var(--success)', partial: 'var(--warning)', rejected: 'var(--danger)' };
+      const tips = {
+        waiting: '손해사정사 회신을 기다리고 있습니다.',
+        approved: '견적이 승인되었습니다. 공사를 진행하세요!',
+        partial: '삭감 항목을 확인하고 방어 논리를 준비하세요. 재발송이 필요할 수 있습니다.',
+        rejected: '거부 사유를 확인하세요. 금감원 민원 또는 소명서 자동 생성이 가능합니다.',
+      };
+      msg.innerHTML = `
+        <div class="alert" style="border-left:4px solid ${colors[status]}; background:${status==='approved'?'var(--success-bg)':status==='rejected'?'var(--danger-bg)':status==='partial'?'var(--warning-bg)':'var(--gray-100)'};">
+          <strong style="color:${colors[status]};">${labels[status]}</strong><br>
+          <span style="font-size:0.9375rem;">${tips[status]}</span>
+        </div>
+      `;
+      LTI.toast('회신 상태: ' + labels[status]);
+    }
+
+    // ===== 완료확인서: 7종 서류 상태 관리 =====
+    const DOCS = [
+      { num: 1, title: '위임장 + 신분증 사본', desc: '피해현장 탭에서 위임장 서명 + 신분증 등록', done: false, manual: false },
+      { num: 2, title: '공사 완료 확인서 (고객 서명)', desc: '피해현장 탭에서 공사 완료 확인서 서명', done: false, manual: false },
+      { num: 3, title: '최종 세부 청구서 (견적서)', desc: '견적 탭에서 견적서 작성 완료', done: false, manual: false },
+      { num: 4, title: '피해현장 사진 대지', desc: '피해사진에서 사진 등록 (최소 5장 이상)', done: false, manual: false },
+      { num: 5, title: '실비 지출 영수증 (선택)', desc: '자재 구매, 폐기물 처리 등 영수증 첨부 (없으면 생략 가능)', done: false, manual: true, optional: true },
+      { num: 6, title: '사업자등록증 + 통장사본', desc: '최초 1회 등록 완료 (설정에서 관리)', done: true, manual: false },
+      { num: 7, title: '현금영수증/세금계산서 발행 증빙', desc: '아랫집 명의로 적격 증빙 발행', done: false, manual: true },
+    ];
+
+    const EYE_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const CHECK_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>';
+
+    function renderDocList() {
+      const container = document.getElementById('doc-list-container');
+      container.innerHTML = DOCS.map(d => `
+        <div class="status-row ${d.done ? 'completed' : ''}" id="doc-${d.num}" style="gap:10px;">
+          <div class="status-icon ${d.done ? 'done' : 'pending'}" id="doc-${d.num}-icon">${CHECK_SVG}</div>
+          <div class="status-body" ${d.manual ? `onclick="toggleDocManual(${d.num})" style="cursor:pointer;"` : ''}>
+            <div class="status-title" style="font-size:1rem;">&#${9311+d.num}; ${d.title}</div>
+            <div class="status-value" id="doc-${d.num}-val" style="font-size:0.8125rem;">${d.desc}</div>
+          </div>
+          <button onclick="previewDoc(${d.num})" title="미리보기"
+            style="width:36px;height:36px;border:1.5px solid ${d.done?'var(--success)':'var(--gray-300)'};border-radius:8px;background:${d.done?'var(--success-bg)':'white'};color:${d.done?'var(--success)':'var(--gray-400)'};cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            ${EYE_SVG}
+          </button>
+          <span class="status-badge ${d.done ? 'done' : 'pending'}" id="doc-${d.num}-badge">${d.done ? '완료' : (d.num===5?'미첨부':d.num===7?'미발행':'미완료')}</span>
+        </div>
+      `).join('');
+      updateDocSummary();
+    }
+
+    function toggleDocManual(num) {
+      const doc = DOCS.find(d => d.num === num);
+      if (!doc || !doc.manual) return;
+      doc.done = !doc.done;
+      renderDocList();
+      LTI.toast(doc.done ? '완료 처리되었습니다' : '미완료로 변경되었습니다');
+    }
+
+    function previewDoc(num) {
+      const doc = DOCS.find(d => d.num === num);
+      const statusText = doc.done ? '완료됨' : '미완료';
+      const statusColor = doc.done ? 'var(--success)' : 'var(--danger)';
+
+      // 미리보기 모달
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;';
+      overlay.innerHTML = `
+        <div style="background:white;border-radius:20px;max-width:480px;width:100%;padding:28px;box-shadow:0 16px 48px rgba(0,0,0,0.15);max-height:80vh;overflow-y:auto;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <h3 style="font-size:1.125rem;">&#${9311+num}; ${doc.title}</h3>
+            <button onclick="this.closest('div[style*=fixed]').remove()" style="width:36px;height:36px;border:none;background:var(--gray-100);border-radius:50%;cursor:pointer;font-size:1.25rem;color:var(--gray-600);">&times;</button>
+          </div>
+          <div style="background:var(--gray-100);border-radius:12px;padding:40px 20px;text-align:center;margin-bottom:20px;">
+            <div style="font-size:3rem;margin-bottom:12px;">${doc.done ? '✅' : '📄'}</div>
+            <div style="font-size:1rem;font-weight:600;color:var(--gray-700);">${doc.title}</div>
+            <div style="font-size:0.875rem;color:${statusColor};margin-top:8px;font-weight:600;">상태: ${statusText}</div>
+            ${doc.done ? '<div style="font-size:0.8125rem;color:var(--gray-500);margin-top:8px;">서류가 정상적으로 준비되었습니다.</div>' : '<div style="font-size:0.8125rem;color:var(--gray-500);margin-top:8px;">' + doc.desc + '</div>'}
+          </div>
+          <div style="display:flex;gap:10px;">
+            ${doc.done ? '<button class="btn btn-secondary" style="flex:1;" onclick="LTI.toast(\'목업: 수정 화면으로 이동\')">수정</button>' : ''}
+            <button class="btn btn-primary" style="flex:1;" onclick="this.closest('div[style*=fixed]').remove()">${doc.done ? '확인' : '닫기'}</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    function updateDocSummary() {
+      const done = DOCS.filter(d => d.done).length;
+      const required = DOCS.filter(d => !d.optional);
+      const requiredDone = required.filter(d => d.done).length;
+      const total = DOCS.length;
+
+      document.getElementById('doc-count-text').textContent = done + ' / ' + total;
+      document.getElementById('doc-progress').style.width = Math.round(done/total*100) + '%';
+
+      const claimBtn = document.getElementById('claim-btn');
+      const claimHint = document.getElementById('claim-btn-hint');
+
+      // 필수 서류만 모두 완료되면 청구 가능 (⑤ 영수증은 선택)
+      const allRequiredDone = requiredDone === required.length;
+
+      if (allRequiredDone) {
+        document.getElementById('doc-summary').style.borderColor = 'var(--success)';
+        document.getElementById('doc-summary-text').innerHTML = '<strong style="color:var(--success);">필수 서류 완료! 아래 버튼으로 보험청구를 진행하세요.</strong>';
+        claimBtn.disabled = false;
+        claimHint.textContent = '서류가 PDF로 병합되어 담당자에게 발송됩니다';
+      } else {
+        document.getElementById('doc-summary').style.borderColor = 'var(--gray-300)';
+        document.getElementById('doc-summary-text').textContent = '필수 서류가 완료되면 보험청구를 진행할 수 있습니다. (⑤ 영수증은 선택)';
+        claimBtn.disabled = true;
+        claimHint.textContent = '필수 서류 완료 시 활성화됩니다';
+      }
+    }
+
+    // 보험청구 진행
+    function submitClaim() {
+      LTI.confirm({
+        title: '보험청구 진행',
+        message: '7종 서류를 PDF로 병합하여<br>담당 손해사정사 이메일로 발송합니다.<br><br>진행하시겠습니까?',
+        confirmText: '발송',
+        cancelText: '취소',
+        onConfirm: function() {
+          // 청구일시 기록
+          document.getElementById('claim-date').textContent = LTI.formatNow();
+          // 보험청구 탭에 결과 표시
+          document.getElementById('claim-empty').style.display = 'none';
+          document.getElementById('claim-result').style.display = 'block';
+          // 보험청구 서브탭으로 이동
+          onSubTabClick('보험청구');
+          LTI.toast('보험 청구서가 발송되었습니다');
+        }
+      });
+    }
+
+    // 데모: 전체 완료/초기화
+    function demoDocAll() {
+      DOCS.forEach(d => d.done = true);
+      renderDocList();
+      LTI.toast('모든 서류가 완료되었습니다');
+    }
+    function demoDocReset() {
+      DOCS.forEach(d => { if (d.num !== 6) d.done = false; });
+      renderDocList();
+      document.getElementById('claim-empty').style.display = '';
+      document.getElementById('claim-result').style.display = 'none';
+      LTI.toast('초기화되었습니다');
+    }
+
+    // ===== 담당자 협의 내용 =====
+    const memos = [];
+
+    function showMemoForm() {
+      document.getElementById('memo-form').style.display = 'block';
+      document.getElementById('memo-input').focus();
+    }
+    function hideMemoForm() {
+      document.getElementById('memo-form').style.display = 'none';
+      document.getElementById('memo-input').value = '';
+    }
+    function addMemo() {
+      const text = document.getElementById('memo-input').value.trim();
+      if (!text) { LTI.toast('내용을 입력하세요'); return; }
+      memos.push({ date: LTI.formatNow(), text: text });
+      renderMemos();
+      hideMemoForm();
+      LTI.toast('협의 내용이 저장되었습니다');
+    }
+    function renderMemos() {
+      const list = document.getElementById('memo-list');
+      if (memos.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--gray-400);font-size:0.9375rem;">아직 협의 내용이 없습니다</div>';
+        return;
+      }
+      list.innerHTML = memos.map(m => `
+        <div style="padding:12px 16px;background:white;border:1px solid var(--gray-200);border-radius:10px;margin-bottom:8px;">
+          <div style="font-size:0.75rem;color:var(--gray-400);margin-bottom:4px;">${m.date}</div>
+          <div style="font-size:0.9375rem;color:var(--gray-700);line-height:1.5;">${m.text}</div>
+        </div>
+      `).join('');
+    }
+
+    // ===== 보험청구 타임라인 로그 =====
+    function renderTimeline() {
+      const log = document.getElementById('timeline-log');
+      if (!log) return;
+
+      const events = [
+        { date: '2026.04.08 09:30', icon: '📍', title: '피해현장 등록', desc: '서울특별시 강남구 테헤란로 123 래미안아파트 102동 1201호' },
+        { date: '2026.04.08 09:35', icon: '📞', title: '피해자 연락처 등록', desc: '홍길동 010-9876-5432' },
+        { date: '2026.04.08 09:40', icon: '✍️', title: '공사 위임장 서명', desc: '아랫집 고객 전자서명 완료' },
+        { date: '2026.04.08 09:42', icon: '✍️', title: '보험금 수령 동의서 서명', desc: '아랫집 고객 전자서명 완료' },
+        { date: '2026.04.08 09:45', icon: '🪪', title: '신분증 등록', desc: '주민번호 뒷자리 자동 마스킹 적용' },
+        { date: '2026.04.08 10:15', icon: '📸', title: '피해사진 등록', desc: '기존 현장에서 2장 자동 복사 + 추가 촬영' },
+        { date: '2026.04.09 14:00', icon: '📋', title: '견적서 작성 완료', desc: '도배·목공·바닥·청소 — 합계 3,850,000원 (부가세 포함)' },
+        { date: '2026.04.09 14:05', icon: '✍️', title: '견적서 확인 및 동의', desc: '아랫집 고객 전자서명 완료' },
+        { date: '2026.04.09 14:30', icon: '🏢', title: '담당자 정보 등록', desc: '삼성화재 / 손해사정사 김사정' },
+        { date: '2026.04.09 14:35', icon: '📤', title: '견적서 선승인 발송', desc: '이메일 발송 — 이의기한 5일' },
+      ];
+
+      // 협의 내용도 타임라인에 추가
+      memos.forEach(m => {
+        events.push({ date: m.date, icon: '💬', title: '담당자 협의', desc: m.text });
+      });
+
+      // 추가 데모 이벤트
+      events.push(
+        { date: '2026.04.14 10:00', icon: '✅', title: '견적 승인 확인', desc: '손해사정사 이의 없음 — 견적 전액 승인' },
+        { date: '2026.04.15 ~ 04.22', icon: '🔨', title: '공사 진행', desc: '보양 → 철거 → 시공 → 마감 (8일간)' },
+        { date: '2026.04.22 16:00', icon: '✍️', title: '공사 완료 확인서 서명', desc: '아랫집 고객 — 하자 없음 확인, 전자서명 완료' },
+        { date: '2026.04.22 16:30', icon: '🧾', title: '세금계산서 발행', desc: '아랫집 명의 현금영수증 발행 완료' },
+        { date: '2026.04.22 17:00', icon: '📤', title: '보험 청구 발송', desc: '7종 서류 PDF 병합 → 담당자 이메일 발송' },
+      );
+
+      log.innerHTML = events.map(e => `
+        <div style="position:relative; padding-bottom:20px;">
+          <div style="position:absolute; left:-32px; top:2px; width:24px; height:24px; background:white; border:2px solid var(--gray-200); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem;">${e.icon}</div>
+          <div style="font-size:0.6875rem; color:var(--gray-400); margin-bottom:2px;">${e.date}</div>
+          <div style="font-size:0.9375rem; font-weight:600; color:var(--gray-800);">${e.title}</div>
+          <div style="font-size:0.8125rem; color:var(--gray-500); margin-top:2px;">${e.desc}</div>
+        </div>
+      `).join('');
+    }
+
+    // 보험청구 서브탭 열릴 때 타임라인 렌더
+    const origOnSubTabClick = onSubTabClick;
+    onSubTabClick = function(sub) {
+      origOnSubTabClick(sub);
+      if (sub === '보험청구') renderTimeline();
+    };
+
+    // 초기 렌더링
+    renderDocList();
+  </script>
+</body>
+</html>

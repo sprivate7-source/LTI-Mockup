@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — 견적</title>
+  <link rel="stylesheet" href="../common/style.css">
+  <link rel="stylesheet" href="../common/tab-bar.css">
+  <style>
+    /* --- 견적: 공종 카드 --- */
+    .trade-card {
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 14px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .trade-card.selected {
+      border-color: var(--primary);
+    }
+    .trade-header {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      gap: 12px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      background: var(--primary-bg);
+    }
+    .trade-header:active {
+      background: #f5e6c8;
+    }
+    .trade-check {
+      width: 26px;
+      height: 26px;
+      accent-color: var(--primary);
+      flex-shrink: 0;
+    }
+    .trade-name {
+      flex: 1;
+      font-size: 1.375rem;
+      font-weight: 700;
+      color: var(--gray-800);
+    }
+    .trade-subtotal {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .trade-arrow {
+      color: var(--gray-400);
+      font-size: 1.25rem;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .trade-card.open .trade-arrow {
+      transform: rotate(180deg);
+    }
+    .trade-body {
+      display: none;
+      padding: 0 16px 16px;
+      margin-left: 38px;
+      border-left: 2px solid var(--gray-200);
+    }
+    .trade-card.open .trade-body {
+      display: block;
+    }
+    /* 세부항목 행 */
+    .item-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-100);
+      gap: 8px;
+      transition: background 0.15s, opacity 0.15s;
+    }
+    .item-row:last-child {
+      border-bottom: none;
+    }
+    .item-row.dragging {
+      opacity: 0.4;
+    }
+    .item-row.drag-over {
+      border-top: 2px solid var(--primary);
+    }
+    /* 드래그 핸들 */
+    .item-grip {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-300);
+      cursor: grab;
+      flex-shrink: 0;
+      touch-action: none;
+      border-radius: 4px;
+    }
+    .item-grip:active {
+      cursor: grabbing;
+      color: var(--primary);
+      background: var(--primary-bg);
+    }
+    .item-grip svg {
+      width: 18px;
+      height: 18px;
+    }
+    .item-check {
+      width: 22px;
+      height: 22px;
+      accent-color: var(--primary);
+      flex-shrink: 0;
+    }
+    .item-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .item-name {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+    .item-detail {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 3px;
+    }
+    .item-detail-tag {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      background: var(--gray-100);
+      padding: 1px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .item-price {
+      width: 100px;
+      text-align: right;
+      padding: 8px 10px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      flex-shrink: 0;
+    }
+    .item-price:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    /* 수정 버튼 */
+    .item-edit {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: none;
+      color: var(--gray-300);
+      cursor: pointer;
+      flex-shrink: 0;
+      border-radius: 6px;
+      padding: 0;
+    }
+    .item-edit:active {
+      background: var(--primary-bg);
+      color: var(--primary);
+    }
+    .item-edit svg {
+      width: 16px;
+      height: 16px;
+    }
+    /* 삭제 버튼 */
+    .item-delete {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: none;
+      color: var(--gray-300);
+      cursor: pointer;
+      flex-shrink: 0;
+      border-radius: 6px;
+      padding: 0;
+    }
+    .item-delete:active {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+    .item-delete svg {
+      width: 16px;
+      height: 16px;
+    }
+    .item-row.disabled .item-name {
+      color: var(--gray-500);
+    }
+    .item-row.disabled .item-spec {
+      color: var(--gray-400);
+    }
+    .item-row.disabled .item-info {
+      opacity: 0.5;
+    }
+    .item-row.disabled .item-price {
+      background: var(--gray-50);
+      color: var(--gray-500);
+    }
+    /* 품셈 그룹 헤더 */
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 0 8px;
+      margin-top: 8px;
+      border-top: 1.5px dashed var(--gray-200);
+    }
+    .group-header.first {
+      border-top: none;
+      margin-top: 0;
+      padding-top: 4px;
+    }
+    .group-name {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--gray-700);
+    }
+    .group-desc {
+      font-size: 0.6875rem;
+      color: var(--gray-400);
+      white-space: nowrap;
+    }
+    .group-subtotal {
+      margin-left: auto;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+    /* 항목 추가 버튼 */
+    .item-add-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: 1.5px dashed var(--gray-300);
+      border-radius: 8px;
+      background: none;
+      color: var(--gray-500);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .item-add-btn:active {
+      background: var(--gray-50);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    /* 인라인 추가 폼 */
+    .item-add-form {
+      padding: 12px;
+      background: var(--gray-50);
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+    .item-add-form input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      margin-bottom: 8px;
+    }
+    .item-add-form input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    .item-add-form-btns {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <div class="header">
+    <a href="../01_현장상세.html" class="header-back" aria-label="뒤로가기">&#8249;</a>
+    <div class="header-title">아랫집 피해복구</div>
+    <div class="header-action"></div>
+  </div>
+
+  <!-- 탭 바 -->
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="sub-tab-bar" id="sub-tab-bar"></div>
+
+  <!-- 페이지 콘텐츠 -->
+  <div class="page-tab">
+
+    <!-- 현장 조건 수정 링크 -->
+    <a href="견적_도배.html" style="display:flex; align-items:center; gap:8px; padding:10px 16px; background:var(--info-bg); border-radius:10px; margin-bottom:14px; text-decoration:none; color:var(--info); font-size:0.875rem; font-weight:600;">
+      <span>&#8249;</span>
+      <span>현장 조건 수정 (방 구성·면적·옵션)</span>
+      <span style="margin-left:auto; font-size:1.25rem;">&#8250;</span>
+    </a>
+
+    <!-- 부가세 옵션 -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+      <span style="font-size:1rem; font-weight:700; color:var(--gray-800);">견적서 (자동 생성 결과)</span>
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none;">
+        <span style="font-size:0.875rem; color:var(--gray-500);">부가세 포함</span>
+        <input type="checkbox" id="vat-toggle" checked onchange="recalcTotal()" style="width:20px;height:20px;accent-color:var(--primary);">
+      </label>
+    </div>
+
+    <!-- 공종 체크박스 목록 -->
+    <div id="trade-list"></div>
+
+    <!-- 합계 -->
+    <div class="card" style="border-color:var(--primary); margin-top:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:1rem; color:var(--gray-600);">공급가액</span>
+        <span style="font-size:1.125rem; font-weight:700;" id="total-supply">0원</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;" id="vat-row">
+        <span style="font-size:1rem; color:var(--gray-600);">부가세 (10%)</span>
+        <span style="font-size:1.125rem; font-weight:700;" id="total-vat">0원</span>
+      </div>
+      <div class="divider" style="margin:12px 0;"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:1.125rem; font-weight:700; color:var(--gray-800);">합계금액</span>
+        <span style="font-size:1.5rem; font-weight:700; color:var(--primary);" id="total-amount">0원</span>
+      </div>
+      <div style="margin-top:10px; font-size:0.8125rem; color:var(--gray-500); text-align:right;" id="vat-note">
+        ※ 본 견적은 적격 증빙 발행 전제 부가세 포함 금액임
+      </div>
+    </div>
+
+    <!-- 견적 완료 버튼 -->
+    <button class="btn btn-primary btn-full btn-lg mt-20" onclick="completeEstimate()">
+      견적서 작성 완료
+    </button>
+
+    <div style="height:32px;"></div>
+  </div>
+
+  <script src="../common/trades/dobae.js"></script>
+  <script src="../common/trades/paint.js"></script>
+  <script src="../common/trades/sink.js"></script>
+  <script src="../common/trades/wood.js"></script>
+  <script src="../common/trades/floor.js"></script>
+  <script src="../common/trades/bathroom.js"></script>
+  <script src="../common/trades/clean.js"></script>
+  <script src="../common/components.js"></script>
+  <script src="../common/tab-bar.js"></script>
+  <script>
+    // 탭 바 렌더링
+    renderTabBar('estimate', '총견적');
+
+    // 기능 패널
+    LTI.renderFeaturePanel({
+      target: '.page-tab',
+      features: [
+        { text: '공종별 체크박스 — 도배/페인트/싱크대/목공/바닥/화장실/청소' },
+        { text: '공종 체크하면 세부 항목이 펼쳐짐 — 각 항목도 개별 체크 가능' },
+        { text: '★ 직종별 품셈 그룹 — 도배공 작업 / 보통인부 작업으로 분리 (삭감 방어)' },
+        { text: '★ 그룹마다 소계 표시 + 표준품셈 근거 조항번호 명시' },
+        { text: '≡ 드래그 핸들로 항목 순서 변경 (터치 드래그)' },
+        { text: '+ 항목 추가 버튼 — 그룹별로 해당 직종에 맞게 추가' },
+        { text: '🗑 삭제 버튼으로 항목 개별 삭제 (확인 후)' },
+        { text: '각 항목에 품수 표기 (보통인부 ○품, 도배공 ○품 등) — 정부 시중노임단가 기준' },
+        { text: '자재비·노무비 분리 표기 — 자재 수량×@단가(물가정보) | 노무 @금액(시중노임단가)' },
+        { text: '단가 근거 출처 명시 — 삭감 방어에 필수 (한국물가정보, 시중노임단가, 표준품셈)' },
+        { text: '각 공종에 폐기물·보양 항목 포함 — 보통인부 그룹에 배치' },
+        { text: '부가세 포함/제외 토글 옵션' },
+        { text: '견적 완료 → 피해현장 탭의 "견적서 확인 및 동의" 잠금 해제' },
+      ],
+    });
+
+    // ===== 견적 탭: 공종별 체크박스 (외부 파일에서 로드) =====
+    const TRADES = [TRADE_DOBAE, TRADE_PAINT, TRADE_SINK, TRADE_WOOD, TRADE_FLOOR, TRADE_BATHROOM, TRADE_CLEAN];
+
+    function fmtN(n) { return n.toLocaleString('ko-KR'); }
+    function parseN(s) { return parseInt(s.replace(/[^0-9]/g,''),10) || 0; }
+
+    const GRIP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>';
+    const EDIT_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+    const DEL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+    // 열림 상태 보존용
+    const openState = {};
+
+    // 개별 항목 행 HTML
+    function itemRowHTML(t, ti, it, ii) {
+      return `<div class="item-row ${!t.checked || !it.checked ? 'disabled' : ''}"
+        id="ir-${ti}-${ii}" draggable="false" data-ti="${ti}" data-ii="${ii}">
+        <div class="item-grip" ontouchstart="startDrag(event,${ti},${ii})" onmousedown="startDrag(event,${ti},${ii})">${GRIP_SVG}</div>
+        <input class="item-check" type="checkbox" ${it.checked ? 'checked' : ''} ${!t.checked ? 'disabled' : ''}
+          onchange="toggleItem(${ti},${ii},this.checked)">
+        <div class="item-info">
+          <div class="item-name">${it.name} <span style="font-weight:400;color:var(--gray-500);font-size:0.8125rem;">${it.spec}</span></div>
+          <div class="item-detail">
+            ${it.qty && it.qty > 1 ? '<span class="item-detail-tag" style="color:var(--primary);font-weight:600;">'+it.qty+it.unit+' x @'+fmtN(it.unitPrice)+'</span>' : '<span class="item-detail-tag">'+it.qty+(it.unit||'식')+'</span>'}
+            ${it.detail ? it.detail.split('|').map(d => '<span class="item-detail-tag">'+d.trim()+'</span>').join('') : ''}
+          </div>
+        </div>
+        <input class="item-price" type="text" inputmode="numeric"
+          value="${it.price > 0 ? fmtN(it.price) : ''}" placeholder="0"
+          onfocus="this.select()" oninput="onItemPrice(${ti},${ii},this)"
+          ${!t.checked || !it.checked ? 'disabled' : ''}>
+        <button class="item-edit" onclick="editItem(${ti},${ii})" title="수정">${EDIT_SVG}</button>
+        <button class="item-delete" onclick="deleteItem(${ti},${ii})" title="삭제">${DEL_SVG}</button>
+      </div>`;
+    }
+
+    // 항목 렌더링 (그룹 지원)
+    function renderItems(t, ti) {
+      // 그룹이 없는 공종 — 기존 방식 (평면 나열)
+      if (!t.groupDefs) {
+        return t.items.map((it, ii) => itemRowHTML(t, ti, it, ii)).join('') +
+          `<button class="item-add-btn" onclick="showAddForm(${ti})">+ 항목 추가</button>
+           <div class="item-add-form" id="add-form-${ti}" style="display:none;">
+             <input type="text" id="add-name-${ti}" placeholder="항목명 (예: 실리콘 코킹)">
+             <input type="text" id="add-spec-${ti}" placeholder="설명 (예: 자재+시공)">
+             <input type="text" id="add-price-${ti}" inputmode="numeric" placeholder="금액 (예: 50000)">
+             <div class="item-add-form-btns">
+               <button class="btn btn-sm btn-secondary" onclick="hideAddForm(${ti})">취소</button>
+               <button class="btn btn-sm btn-primary" onclick="addItem(${ti})">추가</button>
+             </div>
+           </div>`;
+      }
+
+      // 그룹이 있는 공종 — 직종별 그룹 헤더 + 항목
+      let html = '';
+      t.groupDefs.forEach((gd, gi) => {
+        // 이 그룹에 속한 항목 찾기
+        const gItems = [];
+        t.items.forEach((it, ii) => { if (it.group === gd.id) gItems.push({ it, ii }); });
+
+        // 그룹 소계
+        const gSub = t.checked ? gItems.filter(g => g.it.checked).reduce((s, g) => s + g.it.price, 0) : 0;
+
+        html += `<div class="group-header${gi === 0 ? ' first' : ''}">
+          <span class="group-name">${gd.name}</span>
+          <span class="group-desc">${gd.desc}</span>
+          <span class="group-subtotal">${gSub > 0 ? fmtN(gSub) + '원' : ''}</span>
+        </div>`;
+
+        gItems.forEach(g => { html += itemRowHTML(t, ti, g.it, g.ii); });
+
+        html += `<button class="item-add-btn" onclick="showAddForm(${ti},'${gd.id}')">+ 항목 추가</button>`;
+      });
+
+      // 공용 추가 폼 (하단 1개)
+      html += `<div class="item-add-form" id="add-form-${ti}" style="display:none;">
+        <input type="text" id="add-name-${ti}" placeholder="항목명 (예: 실리콘 코킹)">
+        <input type="text" id="add-spec-${ti}" placeholder="설명 (예: 자재+시공)">
+        <input type="text" id="add-price-${ti}" inputmode="numeric" placeholder="금액 (예: 50000)">
+        <input type="hidden" id="add-group-${ti}" value="">
+        <div class="item-add-form-btns">
+          <button class="btn btn-sm btn-secondary" onclick="hideAddForm(${ti})">취소</button>
+          <button class="btn btn-sm btn-primary" onclick="addItem(${ti})">추가</button>
+        </div>
+      </div>`;
+
+      return html;
+    }
+
+    function renderTrades() {
+      const list = document.getElementById('trade-list');
+      list.innerHTML = TRADES.map((t,ti) => {
+        const subtotal = t.checked ? t.items.filter(it=>it.checked).reduce((s,it)=>s+it.price,0) : 0;
+        const isOpen = openState[t.id] !== undefined ? openState[t.id] : t.checked;
+        return `
+        <div class="trade-card ${t.checked ? 'selected' : ''} ${isOpen ? 'open' : ''}" id="trade-${t.id}">
+          <div class="trade-header" onclick="toggleTrade('${t.id}')">
+            <input class="trade-check" type="checkbox" ${t.checked ? 'checked' : ''}
+              onclick="event.stopPropagation(); toggleTradeCheck('${t.id}', this.checked)">
+            <span class="trade-name">${t.name}</span>
+            <span class="trade-subtotal" id="tsub-${t.id}">${subtotal > 0 ? fmtN(subtotal)+'원' : ''}</span>
+            <span class="trade-arrow">&#9660;</span>
+          </div>
+          <div class="trade-body" id="tbody-${t.id}">
+            ${renderItems(t, ti)}
+          </div>
+        </div>
+        `;
+      }).join('');
+      recalcTotal();
+    }
+
+    function toggleTrade(id) {
+      const card = document.getElementById('trade-' + id);
+      card.classList.toggle('open');
+      openState[id] = card.classList.contains('open');
+    }
+
+    function toggleTradeCheck(id, checked) {
+      const trade = TRADES.find(t=>t.id===id);
+      trade.checked = checked;
+      if (checked) openState[id] = true;
+      renderTrades();
+    }
+
+    function toggleItem(ti, ii, checked) {
+      TRADES[ti].items[ii].checked = checked;
+      renderTrades();
+    }
+
+    function onItemPrice(ti, ii, el) {
+      const val = parseN(el.value);
+      TRADES[ti].items[ii].price = val;
+      if (val > 0) el.value = fmtN(val);
+      const t = TRADES[ti];
+      const sub = t.items.filter(it=>it.checked).reduce((s,it)=>s+it.price,0);
+      document.getElementById('tsub-' + t.id).textContent = sub > 0 ? fmtN(sub)+'원' : '';
+      recalcTotal();
+    }
+
+    // ===== 수정 =====
+    function editItem(ti, ii) {
+      const item = TRADES[ti].items[ii];
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;';
+      overlay.innerHTML = `
+        <div style="background:white;border-radius:16px;max-width:420px;width:100%;padding:24px;">
+          <h3 style="margin-bottom:16px; font-size:1.125rem;">항목 수정</h3>
+          <div class="form-group">
+            <label class="form-label">항목명</label>
+            <input class="form-input" type="text" id="edit-name" value="${item.name}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">품셈 정보</label>
+            <input class="form-input" type="text" id="edit-spec" value="${item.spec}">
+          </div>
+          <div style="display:flex; gap:10px; margin-top:16px;">
+            <button class="btn btn-secondary" style="flex:1;" onclick="this.closest('div[style*=fixed]').remove()">취소</button>
+            <button class="btn btn-primary" style="flex:1;" onclick="saveEditItem(${ti},${ii})">저장</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      document.getElementById('edit-name').focus();
+    }
+
+    function saveEditItem(ti, ii) {
+      const name = document.getElementById('edit-name').value.trim();
+      const spec = document.getElementById('edit-spec').value.trim();
+      if (!name) { LTI.toast('항목명을 입력하세요'); return; }
+      TRADES[ti].items[ii].name = name;
+      TRADES[ti].items[ii].spec = spec;
+      document.querySelector('div[style*=fixed]').remove();
+      renderTrades();
+      LTI.toast('항목이 수정되었습니다');
+    }
+
+    // ===== 삭제 =====
+    function deleteItem(ti, ii) {
+      const item = TRADES[ti].items[ii];
+      LTI.confirm({
+        title: '항목 삭제',
+        message: `<strong>${item.name}</strong>을(를) 삭제하시겠습니까?`,
+        confirmText: '삭제',
+        cancelText: '취소',
+        onConfirm: function() {
+          TRADES[ti].items.splice(ii, 1);
+          renderTrades();
+          LTI.toast('항목이 삭제되었습니다');
+        }
+      });
+    }
+
+    // ===== 추가 =====
+    function showAddForm(ti, groupId) {
+      const form = document.getElementById('add-form-' + ti);
+      form.style.display = 'block';
+      // 그룹 정보 저장
+      const groupInput = document.getElementById('add-group-' + ti);
+      if (groupInput) groupInput.value = groupId || '';
+      document.getElementById('add-name-' + ti).focus();
+    }
+    function hideAddForm(ti) {
+      document.getElementById('add-form-' + ti).style.display = 'none';
+    }
+    function addItem(ti) {
+      const name = document.getElementById('add-name-' + ti).value.trim();
+      const spec = document.getElementById('add-spec-' + ti).value.trim();
+      const price = parseN(document.getElementById('add-price-' + ti).value);
+      const groupInput = document.getElementById('add-group-' + ti);
+      const group = groupInput ? groupInput.value : '';
+      if (!name) { LTI.toast('항목명을 입력하세요'); return; }
+
+      const newItem = { name, spec: spec || '', detail: '', price, checked: true, qty: 1, unit: '식', unitPrice: price };
+      if (group) {
+        newItem.group = group;
+        // 해당 그룹 마지막 위치에 삽입
+        let lastIdx = -1;
+        TRADES[ti].items.forEach((it, ii) => { if (it.group === group) lastIdx = ii; });
+        TRADES[ti].items.splice(lastIdx + 1, 0, newItem);
+      } else {
+        TRADES[ti].items.push(newItem);
+      }
+      renderTrades();
+      LTI.toast(name + ' 항목이 추가되었습니다');
+    }
+
+    // ===== 드래그 앤 드롭 (터치 + 마우스) =====
+    let dragTi = -1, dragIi = -1, dragOverIi = -1;
+    let dragStartY = 0, isDragging = false;
+
+    function startDrag(e, ti, ii) {
+      e.preventDefault();
+      dragTi = ti;
+      dragIi = ii;
+      isDragging = false;
+      const touch = e.touches ? e.touches[0] : e;
+      dragStartY = touch.clientY;
+
+      document.addEventListener('touchmove', onDragMove, { passive: false });
+      document.addEventListener('mousemove', onDragMove);
+      document.addEventListener('touchend', onDragEnd);
+      document.addEventListener('mouseup', onDragEnd);
+
+      // 현재 행 시각 표시
+      const row = document.getElementById('ir-' + ti + '-' + ii);
+      if (row) row.classList.add('dragging');
+    }
+
+    function onDragMove(e) {
+      e.preventDefault();
+      const touch = e.touches ? e.touches[0] : e;
+      const dy = Math.abs(touch.clientY - dragStartY);
+      if (dy > 5) isDragging = true;
+      if (!isDragging) return;
+
+      // 어떤 행 위에 있는지 찾기
+      const items = TRADES[dragTi].items;
+      const tbody = document.getElementById('tbody-' + TRADES[dragTi].id);
+      if (!tbody) return;
+      const rows = tbody.querySelectorAll('.item-row');
+
+      let newOver = -1;
+      rows.forEach((row, idx) => {
+        const rect = row.getBoundingClientRect();
+        row.classList.remove('drag-over');
+        if (touch.clientY >= rect.top && touch.clientY <= rect.bottom && idx !== dragIi) {
+          newOver = idx;
+          row.classList.add('drag-over');
+        }
+      });
+      dragOverIi = newOver;
+    }
+
+    function onDragEnd(e) {
+      document.removeEventListener('touchmove', onDragMove);
+      document.removeEventListener('mousemove', onDragMove);
+      document.removeEventListener('touchend', onDragEnd);
+      document.removeEventListener('mouseup', onDragEnd);
+
+      // 드래그 시각 효과 제거
+      document.querySelectorAll('.dragging, .drag-over').forEach(el => {
+        el.classList.remove('dragging', 'drag-over');
+      });
+
+      if (isDragging && dragOverIi >= 0 && dragOverIi !== dragIi) {
+        // 항목 이동
+        const items = TRADES[dragTi].items;
+        const [moved] = items.splice(dragIi, 1);
+        items.splice(dragOverIi, 0, moved);
+        renderTrades();
+        LTI.toast('항목 순서가 변경되었습니다');
+      }
+
+      dragTi = -1; dragIi = -1; dragOverIi = -1; isDragging = false;
+    }
+
+    // ===== 합계 =====
+    function recalcTotal() {
+      let supply = 0;
+      TRADES.forEach(t => {
+        if (!t.checked) return;
+        t.items.forEach(it => { if (it.checked) supply += it.price; });
+      });
+      const withVat = document.getElementById('vat-toggle').checked;
+      const vat = withVat ? Math.round(supply * 0.1) : 0;
+      const total = supply + vat;
+
+      document.getElementById('total-supply').textContent = fmtN(supply) + '원';
+      document.getElementById('total-vat').textContent = fmtN(vat) + '원';
+      document.getElementById('total-amount').textContent = fmtN(total) + '원';
+      document.getElementById('vat-row').style.display = withVat ? 'flex' : 'none';
+      document.getElementById('vat-note').textContent = withVat
+        ? '※ 본 견적은 적격 증빙 발행 전제 부가세 포함 금액임'
+        : '※ 부가세 별도';
+    }
+
+    function completeEstimate() {
+      LTI.confirm({
+        title: '견적서 작성 완료',
+        message: '견적서를 확정하시겠습니까?<br><br>확정 후 피해현장 탭에서 고객 서명을 받을 수 있습니다.',
+        confirmText: '확정',
+        cancelText: '취소',
+        onConfirm: function() {
+          LTI.toast('견적서 확정 — 피해현장 탭에서 고객 서명을 받으세요');
+        }
+      });
+    }
+
+    renderTrades();
+  </script>
+</body>
+</html>

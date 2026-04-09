@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>보험금 직접 청구 및 수령 동의서</title>
+  <link rel="stylesheet" href="common-pdf.css">
+</head>
+<body>
+  <div class="pdf-page">
+
+    <!-- 헤더 -->
+    <div class="pdf-header">
+      <div>
+        <div class="pdf-logo">LeakTube Insurance</div>
+        <div class="pdf-logo-sub">리크튜브 누수 피해복구 보험 처리 시스템</div>
+      </div>
+      <div>
+        <div class="pdf-doc-title" style="font-size:15pt;">보험금(손해배상금)<br>직접 청구 및 수령 동의서</div>
+        <div class="pdf-doc-no">문서번호: LTI-2026-04-0002</div>
+      </div>
+    </div>
+
+    <!-- 피해자 정보 -->
+    <table class="info-table">
+      <tr>
+        <th>피해자 (동의인)</th>
+        <td>홍 길 동</td>
+        <th>생년월일</th>
+        <td>1990. 01. 01</td>
+      </tr>
+      <tr>
+        <th>연락처</th>
+        <td>010-9876-5432</td>
+        <th>피해 주소</th>
+        <td>래미안아파트 102동 1201호</td>
+      </tr>
+    </table>
+
+    <!-- 수임 업체 정보 -->
+    <table class="info-table">
+      <tr>
+        <th>수임 업체</th>
+        <td>리크튜브 ○○지사</td>
+        <th>대표자</th>
+        <td>김 대 표</td>
+      </tr>
+      <tr>
+        <th>사업자등록번호</th>
+        <td>123-45-67890</td>
+        <th>입금 계좌</th>
+        <td>○○은행 123-456-789012</td>
+      </tr>
+    </table>
+
+    <!-- 보험 사고 정보 -->
+    <table class="info-table">
+      <tr>
+        <th>보험사</th>
+        <td>삼성화재</td>
+        <th>사고접수번호</th>
+        <td>2026-A-123456</td>
+      </tr>
+      <tr>
+        <th>보험 종류</th>
+        <td>일상생활배상책임보험</td>
+        <th>사고일 (탐지일)</th>
+        <td>2026. 04. 08</td>
+      </tr>
+      <tr>
+        <th>피해 현장</th>
+        <td colspan="3">서울특별시 강남구 테헤란로 123 래미안아파트 102동 1201호</td>
+      </tr>
+    </table>
+
+    <!-- 동의 내용 -->
+    <div class="pdf-body" style="margin-top:20px;">
+      <p>본인(피해자)은 상기 누수 사고로 인한 피해 복구와 관련하여, 아래 사항에 동의합니다.</p>
+    </div>
+
+    <ol class="clause-list">
+      <li>본인은 누수 피해 복구 공사를 상기 수임 업체에 위임하였으며, 공사 대금에 해당하는 <strong>보험금(손해배상금)을 수임 업체 계좌로 직접 지급(직불)</strong>하는 것에 동의합니다.</li>
+      <li>보험금의 청구 및 수령에 관한 일체의 권한을 수임 업체에 위임합니다.</li>
+      <li>수임 업체는 보험금 수령 후 본인에게 공사비 정산 내역을 제공합니다.</li>
+      <li>공사비가 보험금을 초과하는 경우, 초과 금액은 본인이 별도로 정산합니다.</li>
+      <li>보험금이 공사비를 초과하는 경우, 잔액은 본인에게 반환합니다.</li>
+      <li>본 동의서는 해당 사고의 보험금 정산이 완료될 때까지 유효합니다.</li>
+    </ol>
+
+    <!-- 동의 확인 체크 -->
+    <div style="background:#fdf6e8; border:1.5px solid #c8871e; border-radius:6px; padding:14px 18px; margin:20px 0;">
+      <div style="font-size:10pt; font-weight:600; color:#a06c15; margin-bottom:8px;">확인 사항</div>
+      <div style="font-size:9.5pt; color:#505048; line-height:1.8;">
+        ☑ 본인은 위 내용을 충분히 이해하였으며, 자발적으로 동의합니다.<br>
+        ☑ 본인은 보험금이 수임 업체 계좌로 직접 입금되는 것에 동의합니다.<br>
+        ☑ 본인은 공사 완료 후 공사 완료 확인서에 서명할 것을 약속합니다.
+      </div>
+    </div>
+
+    <!-- 서명 -->
+    <div class="sign-area">
+      <div class="sign-date">2026년 04월 08일</div>
+      <div class="sign-row">
+        <div class="sign-block">
+          <div class="sign-label">동의인 (피해자)</div>
+          <div class="sign-name">홍 길 동</div>
+          <div class="sign-box signed">홍길동</div>
+          <div style="font-size:8pt; color:#a0a098; margin-top:4px;">전자서명 완료</div>
+        </div>
+        <div class="sign-block">
+          <div class="sign-label">수임 업체 대표</div>
+          <div class="sign-name">김 대 표</div>
+          <div class="stamp-area">직인</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 부동문자 -->
+    <div class="disclaimer-box" style="margin-top:20px;">
+      본 동의서는 「보험업법」 및 「민법」에 근거한 적법한 채권 위임 동의서이며, 전자서명법에 의한 전자서명이 포함되어 법적 효력을 가집니다. 신분증 사본은 본 동의서의 진정성 확인 목적으로만 사용되며, 보험금 정산 완료 후 즉시 폐기됩니다.
+    </div>
+
+    <div class="pdf-footer">
+      <span>LeakTube Insurance (LTI) | 리크튜브</span>
+      <span>1 / 1</span>
+    </div>
+  </div>
+</body>
+</html>

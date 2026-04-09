@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — 견적 (이사·숙박)</title>
+  <link rel="stylesheet" href="../common/style.css">
+  <link rel="stylesheet" href="../common/tab-bar.css">
+  <style>
+    .work-section { background:white; border:1.5px solid var(--gray-200); border-radius:14px; margin-bottom:14px; overflow:hidden; }
+    .work-section.active { border-color:var(--primary); }
+    .work-header { display:flex; align-items:center; padding:16px; gap:10px; }
+    .work-check { width:24px; height:24px; accent-color:var(--primary); flex-shrink:0; }
+    .work-title { flex:1; font-size:1.0625rem; font-weight:700; color:var(--gray-800); }
+    .work-ref { font-size:0.6875rem; color:var(--gray-400); }
+    .work-body { padding:0 16px 16px; display:none; }
+    .work-section.active .work-body { display:block; }
+    .work-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+    .work-label { font-size:0.875rem; color:var(--gray-500); min-width:80px; }
+    .work-input { width:72px; text-align:center; padding:10px 6px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:1rem; font-weight:600; color:var(--gray-800); }
+    .work-input:focus { border-color:var(--primary); outline:none; }
+    .work-unit { font-size:0.875rem; color:var(--gray-500); }
+    .work-result { font-size:0.875rem; font-weight:700; color:var(--primary); margin-left:auto; white-space:nowrap; }
+    .sub-info { font-size:0.75rem; color:var(--gray-400); margin-top:4px; padding-left:4px; line-height:1.6; }
+    .wp-btn { padding:6px 14px; border:1.5px solid var(--gray-200); border-radius:8px; background:white; font-size:0.875rem; font-weight:600; color:var(--gray-500); cursor:pointer; }
+    .wp-btn.selected { border-color:var(--primary); background:var(--primary-bg); color:var(--primary); }
+    .wallpaper-select { display:flex; gap:6px; }
+    .area-summary { background:white; border:1.5px solid var(--gray-200); border-radius:14px; padding:16px; margin-bottom:16px; }
+    .area-summary-title { font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:10px; }
+    .area-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; }
+    .area-label { font-size:0.9375rem; color:var(--gray-600); }
+    .area-value { font-size:0.9375rem; font-weight:700; color:var(--gray-800); }
+    .area-value.primary { color:var(--primary); font-size:1.125rem; }
+    .cond-cost { font-size:0.8125rem; font-weight:700; color:var(--primary); white-space:nowrap; min-width:80px; text-align:right; }
+    .price-link { display:flex; align-items:center; gap:8px; padding:12px 16px; background:var(--info-bg); border-radius:10px; margin-bottom:16px; text-decoration:none; color:var(--info); font-size:0.875rem; font-weight:600; }
+    .notice-box { padding:12px 16px; background:#fff8e8; border:1.5px solid #f0d78c; border-radius:10px; margin-bottom:16px; font-size:0.8125rem; color:var(--gray-700); line-height:1.6; }
+    .notice-box strong { color:var(--primary); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="../01_현장상세.html" class="header-back" aria-label="뒤로가기">&#8249;</a>
+    <div class="header-title">아랫집 피해복구</div>
+    <div class="header-action"></div>
+  </div>
+
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="sub-tab-bar" id="sub-tab-bar"></div>
+
+  <div class="page-tab">
+
+    <div class="notice-box">
+      <strong>보험 청구 근거</strong><br>
+      · 이사·보관비: 화재보험 약관 <strong>"잔존물 제거비용"</strong> + <strong>"손해방지비용"</strong> — 공사 시 가구 보호를 위한 이동·보관은 손해방지 의무에 해당<br>
+      · 숙박비: 화재보험 약관 <strong>"임시 거주비"</strong> — 누수 피해로 거주 불가능 시 대체 숙박 비용<br>
+      · <strong>사전 보험사 통보 + 영수증 첨부 필수</strong>
+    </div>
+
+    <!-- 1. 단기 이사 (포장·운반) -->
+    <div class="work-section" id="sec-move">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-move" onchange="toggle('move')">
+        <div style="flex:1;">
+          <div class="work-title">단기 이사 (포장·운반)</div>
+          <div class="work-ref">보통인부 품셈 + 차량 운반비</div>
+        </div>
+        <span class="cond-cost" id="cost-move"></span>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">포장 인부</span>
+          <input class="work-input" type="text" inputmode="numeric" id="pack-qty" value="2" style="width:56px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">명</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);">× 보통인부 @<span id="pack-price"></span>원/일</span>
+        </div>
+        <div class="work-row">
+          <span class="work-label">포장 자재</span>
+          <div>
+            <input class="work-check" type="checkbox" id="chk-packing" checked onchange="recalc()" style="width:20px;height:20px;">
+            <span style="font-size:0.875rem; color:var(--gray-700);">박스·에어캡 등</span>
+            <span style="font-size:0.75rem; color:var(--gray-400);">50,000원</span>
+          </div>
+        </div>
+        <div class="work-row">
+          <span class="work-label">운반 차량</span>
+          <div class="wallpaper-select">
+            <button class="wp-btn selected" onclick="truckType='1t'; selBtn(this)">1톤</button>
+            <button class="wp-btn" onclick="truckType='25t'; selBtn(this)">2.5톤</button>
+            <button class="wp-btn" onclick="truckType='5t'; selBtn(this)">5톤</button>
+          </div>
+        </div>
+        <div class="work-row">
+          <span class="work-label">왕복 (2회)</span>
+          <input class="work-check" type="checkbox" id="chk-roundtrip" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.875rem; color:var(--gray-700);">이사 + 복귀 (공사 전후)</span>
+        </div>
+        <div class="sub-info">이사 1회 = 포장인부 + 운반차량 | 왕복 = 2회 (이사 + 공사 후 복귀)</div>
+      </div>
+    </div>
+
+    <!-- 2. 임시 보관 -->
+    <div class="work-section" id="sec-storage">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-storage" onchange="toggle('storage')">
+        <div style="flex:1;">
+          <div class="work-title">임시 보관 (가구·가전)</div>
+          <div class="work-ref">컨테이너 또는 창고 보관</div>
+        </div>
+        <span class="cond-cost" id="cost-storage"></span>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">보관 방식</span>
+          <div class="wallpaper-select">
+            <button class="wp-btn selected" onclick="storageType='container'; selStorage(this)">컨테이너</button>
+            <button class="wp-btn" onclick="storageType='warehouse'; selStorage(this)">창고</button>
+          </div>
+        </div>
+        <div class="work-row">
+          <span class="work-label">보관 기간</span>
+          <input class="work-input" type="text" inputmode="numeric" id="storage-days" value="14" style="width:72px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">일</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);" id="storage-unit-price"></span>
+        </div>
+        <div class="sub-info">보관 기간 = 공사 기간과 동일하게 산정 | 영수증 첨부 필수</div>
+      </div>
+    </div>
+
+    <!-- 3. 숙박비 (임시 거주) -->
+    <div class="work-section" id="sec-hotel">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-hotel" onchange="toggle('hotel')">
+        <div style="flex:1;">
+          <div class="work-title">숙박비 (임시 거주)</div>
+          <div class="work-ref">화재보험 약관 "임시 거주비"</div>
+        </div>
+        <span class="cond-cost" id="cost-hotel"></span>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">숙박 등급</span>
+          <div class="wallpaper-select">
+            <button class="wp-btn" onclick="hotelType='motel'; selHotel(this)">모텔</button>
+            <button class="wp-btn selected" onclick="hotelType='hotel'; selHotel(this)">비즈니스호텔</button>
+          </div>
+        </div>
+        <div class="work-row">
+          <span class="work-label">숙박 기간</span>
+          <input class="work-input" type="text" inputmode="numeric" id="hotel-nights" value="14" style="width:72px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">박</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);" id="hotel-unit-price"></span>
+        </div>
+        <div class="work-row">
+          <span class="work-label">인원</span>
+          <input class="work-input" type="text" inputmode="numeric" id="hotel-persons" value="2" style="width:56px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">명</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);">1실 2인 기준 (추가 인원 시 객실 추가)</span>
+        </div>
+        <div class="work-row">
+          <span class="work-label">객실 수</span>
+          <input class="work-input" type="text" inputmode="numeric" id="hotel-rooms" value="1" style="width:56px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">실</span>
+        </div>
+        <div class="sub-info">
+          숙박 기간 = 공사 기간과 동일하게 산정 | 비즈니스호텔 수준이 보험사 인정 적정 등급<br>
+          ※ 과도한 등급(리조트·특급호텔)은 삭감 가능 — 영수증 첨부 필수
+        </div>
+      </div>
+    </div>
+
+    <!-- 합계 -->
+    <div class="area-summary" id="area-summary"></div>
+
+    <button class="btn btn-primary btn-full btn-lg mt-20" onclick="generateEstimate()">
+      견적 자동 생성
+    </button>
+
+    <div style="height:32px;"></div>
+  </div>
+
+  <script src="../common/trades/unit-prices.js"></script>
+  <script src="../common/components.js"></script>
+  <script src="../common/tab-bar.js"></script>
+  <script>
+    renderTabBar('estimate', '이사·숙박');
+
+    LTI.renderFeaturePanel({
+      target: '.page-tab',
+      features: [
+        { text: '보험 청구 근거 — 화재보험 약관 "손해방지비용" + "임시 거주비" 명시' },
+        { text: '단기 이사 — 포장 인부(보통인부 품셈) + 운반 차량(1톤/2.5톤/5톤) + 왕복 선택' },
+        { text: '포장 자재 — 박스·에어캡 등 체크 (50,000원)' },
+        { text: '임시 보관 — 컨테이너/창고 선택 + 보관 기간(일) 입력' },
+        { text: '숙박비 — 모텔/비즈니스호텔 선택 + 기간(박) + 인원·객실 수' },
+        { text: '★ 부가세 미적용 — 이사·숙박은 실비 정산 (다른 공종과 다름)' },
+        { text: '★ 영수증 첨부 필수 — 사전 보험사 통보 + 실비 증빙' },
+        { text: '모든 단가 unit-prices.js 참조 (시장가 기준) + 실시간 금액 표시' },
+        { text: '견적 자동 생성 → 이사 + 보관 + 숙박 합계 (VAT 없음)' },
+      ],
+    });
+
+    function fmtN(n) { return n.toLocaleString('ko-KR'); }
+
+    let truckType = '1t';
+    let storageType = 'container';
+    let hotelType = 'hotel';
+
+    function toggle(id) {
+      const sec = document.getElementById('sec-' + id);
+      const chk = document.getElementById('chk-' + id);
+      if (chk.checked) sec.classList.add('active');
+      else sec.classList.remove('active');
+      recalc();
+    }
+    function selBtn(el) {
+      el.parentElement.querySelectorAll('.wp-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      recalc();
+    }
+    function selStorage(el) {
+      el.parentElement.querySelectorAll('.wp-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      recalc();
+    }
+    function selHotel(el) {
+      el.parentElement.querySelectorAll('.wp-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      recalc();
+    }
+
+    function getMv(id) { return UNIT_PRICES.moving.find(m => m.id === id); }
+
+    function recalc() {
+      const packPrice = getMv('mv-pack').price;
+      document.getElementById('pack-price').textContent = fmtN(packPrice);
+
+      let lines = [];
+
+      // 이사
+      if (document.getElementById('chk-move').checked) {
+        const packQty = parseInt(document.getElementById('pack-qty').value) || 0;
+        const truckId = 'mv-truck-' + truckType;
+        const truckPrice = getMv(truckId).price;
+        const hasPacking = document.getElementById('chk-packing').checked;
+        const roundTrip = document.getElementById('chk-roundtrip').checked ? 2 : 1;
+
+        const packCost = packQty * packPrice * roundTrip;
+        const truckCost = truckPrice * roundTrip;
+        const packingCost = hasPacking ? getMv('mv-packing').price : 0;
+        const moveCost = packCost + truckCost + packingCost;
+
+        document.getElementById('cost-move').textContent = fmtN(moveCost) + '원';
+        lines.push({ label: '단기 이사' + (roundTrip === 2 ? ' (왕복)' : ''), value: fmtN(moveCost) + '원' });
+      } else {
+        document.getElementById('cost-move').textContent = '';
+      }
+
+      // 보관
+      if (document.getElementById('chk-storage').checked) {
+        const storageId = storageType === 'container' ? 'mv-container' : 'mv-warehouse';
+        const storagePrice = getMv(storageId).price;
+        const days = parseInt(document.getElementById('storage-days').value) || 0;
+        const storageCost = storagePrice * days;
+
+        document.getElementById('storage-unit-price').textContent = '@' + fmtN(storagePrice) + '원/일';
+        document.getElementById('cost-storage').textContent = days > 0 ? fmtN(storageCost) + '원' : '';
+        if (days > 0) lines.push({ label: '임시 보관 (' + days + '일)', value: fmtN(storageCost) + '원' });
+      } else {
+        document.getElementById('cost-storage').textContent = '';
+      }
+
+      // 숙박
+      if (document.getElementById('chk-hotel').checked) {
+        const hotelId = hotelType === 'hotel' ? 'mv-hotel' : 'mv-motel';
+        const hotelPrice = getMv(hotelId).price;
+        const nights = parseInt(document.getElementById('hotel-nights').value) || 0;
+        const rooms = parseInt(document.getElementById('hotel-rooms').value) || 1;
+        const hotelCost = hotelPrice * nights * rooms;
+
+        document.getElementById('hotel-unit-price').textContent = '@' + fmtN(hotelPrice) + '원/박';
+        document.getElementById('cost-hotel').textContent = nights > 0 ? fmtN(hotelCost) + '원' : '';
+        if (nights > 0) lines.push({ label: '숙박 (' + nights + '박 × ' + rooms + '실)', value: fmtN(hotelCost) + '원' });
+      } else {
+        document.getElementById('cost-hotel').textContent = '';
+      }
+
+      document.getElementById('area-summary').innerHTML = `
+        <div class="area-summary-title">항목 요약</div>
+        ${lines.length > 0 ? lines.map(l => '<div class="area-row"><span class="area-label">'+l.label+'</span><span class="area-value">'+l.value+'</span></div>').join('') : '<div style="font-size:0.875rem; color:var(--gray-400);">체크한 항목이 없습니다</div>'}
+      `;
+    }
+
+    // ===== 견적 자동 생성 =====
+    function generateEstimate() {
+      const chkMove = document.getElementById('chk-move').checked;
+      const chkStorage = document.getElementById('chk-storage').checked;
+      const chkHotel = document.getElementById('chk-hotel').checked;
+
+      if (!chkMove && !chkStorage && !chkHotel) {
+        LTI.toast('최소 1개 항목을 선택하세요'); return;
+      }
+
+      let total = 0;
+      let details = [];
+
+      // 이사
+      if (chkMove) {
+        const packQty = parseInt(document.getElementById('pack-qty').value) || 0;
+        const packPrice = getMv('mv-pack').price;
+        const truckId = 'mv-truck-' + truckType;
+        const truckPrice = getMv(truckId).price;
+        const truckLabel = truckType === '1t' ? '1톤' : truckType === '25t' ? '2.5톤' : '5톤';
+        const hasPacking = document.getElementById('chk-packing').checked;
+        const roundTrip = document.getElementById('chk-roundtrip').checked ? 2 : 1;
+        const tripLabel = roundTrip === 2 ? '왕복(이사+복귀)' : '편도';
+
+        const packCost = packQty * packPrice * roundTrip;
+        const truckCost = truckPrice * roundTrip;
+        const packingCost = hasPacking ? getMv('mv-packing').price : 0;
+
+        total += packCost + truckCost + packingCost;
+        details.push('포장 인부: ' + packQty + '명 × @' + fmtN(packPrice) + ' × ' + roundTrip + '회 = ' + fmtN(packCost) + '원');
+        details.push('운반 차량(' + truckLabel + '): @' + fmtN(truckPrice) + ' × ' + roundTrip + '회 = ' + fmtN(truckCost) + '원 (' + tripLabel + ')');
+        if (hasPacking) details.push('포장 자재: ' + fmtN(packingCost) + '원');
+      }
+
+      // 보관
+      if (chkStorage) {
+        const storageId = storageType === 'container' ? 'mv-container' : 'mv-warehouse';
+        const storagePrice = getMv(storageId).price;
+        const storageLabel = storageType === 'container' ? '컨테이너' : '창고';
+        const days = parseInt(document.getElementById('storage-days').value) || 0;
+        const storageCost = storagePrice * days;
+
+        total += storageCost;
+        if (days > 0) details.push('임시 보관(' + storageLabel + '): ' + days + '일 × @' + fmtN(storagePrice) + ' = ' + fmtN(storageCost) + '원');
+      }
+
+      // 숙박
+      if (chkHotel) {
+        const hotelId = hotelType === 'hotel' ? 'mv-hotel' : 'mv-motel';
+        const hotelPrice = getMv(hotelId).price;
+        const hotelLabel = hotelType === 'hotel' ? '비즈니스호텔' : '모텔';
+        const nights = parseInt(document.getElementById('hotel-nights').value) || 0;
+        const rooms = parseInt(document.getElementById('hotel-rooms').value) || 1;
+        const persons = parseInt(document.getElementById('hotel-persons').value) || 2;
+        const hotelCost = hotelPrice * nights * rooms;
+
+        total += hotelCost;
+        if (nights > 0) details.push('숙박(' + hotelLabel + '): ' + nights + '박 × ' + rooms + '실 × @' + fmtN(hotelPrice) + ' = ' + fmtN(hotelCost) + '원 (' + persons + '인 거주)');
+      }
+
+      // 이사·숙박은 부가세 미적용 (용역이 아닌 실비 정산)
+      const summary = `
+        <div style="text-align:left; font-size:0.9375rem; line-height:1.8;">
+          <span style="font-size:0.8125rem; color:#888;">
+          ${details.map(d => '&nbsp; · ' + d).join('<br>')}
+          </span><br><br>
+          <div style="border-top:1.5px solid #e8e8e0; padding-top:8px; margin-top:4px;">
+            <span style="font-size:1.125rem; color:#c8871e;"><strong>합계: ${fmtN(total)}원</strong></span><br>
+            <span style="font-size:0.75rem; color:var(--gray-400);">※ 이사·숙박비는 실비 정산 (부가세 별도 없음) — 영수증 첨부 필수</span>
+          </div>
+        </div>
+      `;
+
+      LTI.confirm({
+        title: '이사·숙박 견적 결과',
+        message: summary,
+        confirmText: '확인',
+        cancelText: '수정하기',
+        onConfirm: function() { LTI.toast('견적서가 생성되었습니다'); }
+      });
+    }
+
+    recalc();
+  </script>
+</body>
+</html>

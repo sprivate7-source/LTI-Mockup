@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — 견적 (싱크대)</title>
+  <link rel="stylesheet" href="../common/style.css">
+  <link rel="stylesheet" href="../common/tab-bar.css">
+  <style>
+    .work-section { background:white; border:1.5px solid var(--gray-200); border-radius:14px; margin-bottom:14px; overflow:hidden; }
+    .work-section.active { border-color:var(--primary); }
+    .work-header { display:flex; align-items:center; padding:16px; gap:10px; }
+    .work-check { width:24px; height:24px; accent-color:var(--primary); flex-shrink:0; }
+    .work-title { flex:1; font-size:1.0625rem; font-weight:700; color:var(--gray-800); }
+    .work-ref { font-size:0.6875rem; color:var(--gray-400); white-space:nowrap; }
+    .work-body { padding:0 16px 16px; display:none; }
+    .work-section.active .work-body { display:block; }
+    .work-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+    .work-label { font-size:0.875rem; color:var(--gray-500); min-width:70px; }
+    .work-input { width:72px; text-align:center; padding:10px 6px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:1rem; font-weight:600; color:var(--gray-800); }
+    .work-input:focus { border-color:var(--primary); outline:none; }
+    .work-unit { font-size:0.875rem; color:var(--gray-500); }
+    .wp-btn { padding:6px 14px; border:1.5px solid var(--gray-200); border-radius:8px; background:white; font-size:0.875rem; font-weight:600; color:var(--gray-500); cursor:pointer; }
+    .wp-btn.selected { border-color:var(--primary); background:var(--primary-bg); color:var(--primary); }
+    .wallpaper-select { display:flex; gap:6px; }
+    .sub-info { font-size:0.75rem; color:var(--gray-400); margin-top:4px; padding-left:4px; line-height:1.6; }
+    .area-summary { background:white; border:1.5px solid var(--gray-200); border-radius:14px; padding:16px; margin-bottom:16px; }
+    .area-summary-title { font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:10px; }
+    .area-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; }
+    .area-label { font-size:0.9375rem; color:var(--gray-600); }
+    .area-value { font-size:0.9375rem; font-weight:700; color:var(--gray-800); }
+    .area-value.primary { color:var(--primary); font-size:1.125rem; }
+    .condition-section { background:white; border:1.5px solid var(--gray-200); border-radius:14px; padding:16px; margin-bottom:16px; }
+    .condition-title { font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:12px; }
+    .condition-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--gray-100); }
+    .condition-item:last-child { border-bottom:none; }
+    .condition-check { width:24px; height:24px; accent-color:var(--primary); }
+    .condition-label { font-size:0.9375rem; font-weight:600; color:var(--gray-700); }
+    .condition-desc { font-size:0.75rem; color:var(--gray-400); }
+    .cond-cost { font-size:0.8125rem; font-weight:700; color:var(--primary); white-space:nowrap; min-width:70px; text-align:right; }
+    .price-link { display:flex; align-items:center; gap:8px; padding:12px 16px; background:var(--info-bg); border-radius:10px; margin-bottom:16px; text-decoration:none; color:var(--info); font-size:0.875rem; font-weight:600; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="../01_현장상세.html" class="header-back" aria-label="뒤로가기">&#8249;</a>
+    <div class="header-title">아랫집 피해복구</div>
+    <div class="header-action"></div>
+  </div>
+
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="sub-tab-bar" id="sub-tab-bar"></div>
+
+  <div class="page-tab">
+
+    <a href="견적_단가설정.html" class="price-link">
+      <span>&#9881;</span>
+      <span>기준단가 설정 (2026년 상반기 적용중)</span>
+      <span style="margin-left:auto; font-size:1.25rem;">&#8250;</span>
+    </a>
+
+    <!-- 1. 싱크대 본체 -->
+    <div class="work-section" id="sec-body">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-body" onchange="toggle('body')">
+        <div>
+          <div class="work-title">싱크대 본체 교체</div>
+          <div class="work-ref">표준품셈 5장 수장공사 · 목공 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-lower" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">하부장</span>
+        </div>
+        <div class="work-row" style="margin-left:32px;">
+          <span class="work-label">길이</span>
+          <input class="work-input" type="text" inputmode="decimal" id="lower-len" value="0" style="width:72px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">m</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);">목공 0.25품/m · 자재 160,000원/m</span>
+        </div>
+        <div class="work-row" style="margin-top:8px;">
+          <input class="work-check" type="checkbox" id="chk-upper" onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">상부장</span>
+        </div>
+        <div class="work-row" style="margin-left:32px;">
+          <span class="work-label">길이</span>
+          <input class="work-input" type="text" inputmode="decimal" id="upper-len" value="0" style="width:72px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">m</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);">목공 0.15품/m · 자재 135,000원/m</span>
+        </div>
+        <div class="work-row" style="margin-top:8px;">
+          <input class="work-check" type="checkbox" id="chk-deco" onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">장식장 (색상 통일)</span>
+        </div>
+        <div class="work-row" style="margin-left:32px;">
+          <span class="work-label">길이</span>
+          <input class="work-input" type="text" inputmode="decimal" id="deco-len" value="0" style="width:72px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">m</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);">목공 0.2품/m · 자재 140,000원/m</span>
+        </div>
+        <div class="sub-info">철거: 설비공 0.2품/m + 보통인부 0.2품/m (기존 싱크대 분리·반출)</div>
+        <div class="sub-info" style="color:var(--info); font-weight:600;">※ 장식장: 피해 부위 교체 시 기존 장식장과 색상·패턴 불일치 발생 → 보험업법 제3조 원상복구 원칙에 의거, 동일 색상·규격 교체가 정당함 (피해 부위만 교체 시 미관 불일치로 원상복구 미완료)</div>
+      </div>
+    </div>
+
+    <!-- 1-2. 씽크볼·부속자재 -->
+    <div class="work-section" id="sec-bowl">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-bowl" onchange="toggle('bowl')">
+        <div style="flex:1;">
+          <div class="work-title">씽크볼·부속자재</div>
+          <div class="work-ref">설비공 품셈 · 본체 교체 시 필수</div>
+        </div>
+        <span class="cond-cost" id="cost-bowl"></span>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">씽크볼</span>
+          <div class="wallpaper-select">
+            <button class="wp-btn selected" onclick="bowlType='standard'; selBowl(this)">스테인리스</button>
+            <button class="wp-btn" onclick="bowlType='under'; selBowl(this)">언더마운트</button>
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <div class="work-row">
+            <input class="work-check" type="checkbox" id="chk-drain-set" checked onchange="recalc()" style="width:20px;height:20px;">
+            <span style="font-size:0.875rem; color:var(--gray-700);">홈통+배수구 세트</span>
+            <span style="font-size:0.75rem; color:var(--gray-400); margin-left:auto;">25,000원</span>
+          </div>
+          <div class="work-row">
+            <input class="work-check" type="checkbox" id="chk-hose" checked onchange="recalc()" style="width:20px;height:20px;">
+            <span style="font-size:0.875rem; color:var(--gray-700);">급수 연결호스</span>
+            <span style="font-size:0.75rem; color:var(--gray-400); margin-left:auto;">12,000원/조</span>
+          </div>
+          <div class="work-row">
+            <input class="work-check" type="checkbox" id="chk-sealant" checked onchange="recalc()" style="width:20px;height:20px;">
+            <span style="font-size:0.875rem; color:var(--gray-700);">실리콘+고정부속</span>
+            <span style="font-size:0.75rem; color:var(--gray-400); margin-left:auto;">8,000원</span>
+          </div>
+        </div>
+        <div class="sub-info">설비공 0.3품 (씽크볼 설치+배수 연결) | 본체 교체 시 필수 부속</div>
+      </div>
+    </div>
+
+    <!-- 2. 상판 -->
+    <div class="work-section" id="sec-top">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-top" onchange="toggle('top')">
+        <div>
+          <div class="work-title">상판 교체</div>
+          <div class="work-ref">석재공/목공 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">자재</span>
+          <div class="wallpaper-select">
+            <button class="wp-btn selected" onclick="topType='art'; selBtn(this)">인조대리석</button>
+            <button class="wp-btn" onclick="topType='qtz'; selBtn(this)">석영석</button>
+          </div>
+        </div>
+        <div class="work-row">
+          <span class="work-label">길이</span>
+          <input class="work-input" type="text" inputmode="decimal" id="top-len" value="0" style="width:72px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">m</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);" id="top-info">목공 0.15품/m · 인조대리석 130,000원/m</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 수전 -->
+    <div class="work-section" id="sec-faucet">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-faucet" onchange="toggle('faucet')">
+        <div>
+          <div class="work-title">수전 교체</div>
+          <div class="work-ref">표준품셈 7장 설비공사 · 설비공 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">수량</span>
+          <input class="work-input" type="text" inputmode="numeric" id="faucet-qty" value="1" style="width:56px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">대</span>
+        </div>
+        <div class="sub-info">설비공 0.2품/대 | 수전 자재 70,000원/대</div>
+      </div>
+    </div>
+
+    <!-- 4. 배관 -->
+    <div class="work-section" id="sec-pipe">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-pipe" onchange="toggle('pipe')">
+        <div>
+          <div class="work-title">배관 연결 (급수·배수)</div>
+          <div class="work-ref">표준품셈 7장 설비공사 · 설비공 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-supply" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">급수 배관 (냉·온수)</span>
+          <span style="font-size:0.8125rem; color:var(--gray-400); margin-left:auto;">설비공 0.3품 + 부속 15,000원</span>
+        </div>
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-drain" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">배수 배관 (트랩+연결)</span>
+          <span style="font-size:0.8125rem; color:var(--gray-400); margin-left:auto;">설비공 0.2품 + 트랩 20,000원</span>
+        </div>
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-piperemove" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">기존 배관 철거</span>
+          <span style="font-size:0.8125rem; color:var(--gray-400); margin-left:auto;">설비공 0.3품</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 타일 보수 -->
+    <div class="work-section" id="sec-tile">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-tile" onchange="toggle('tile')">
+        <div>
+          <div class="work-title">타일 보수 (싱크대 뒷벽)</div>
+          <div class="work-ref">표준품셈 4장 타일공사 · 타일공 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">면적</span>
+          <input class="work-input" type="text" inputmode="decimal" id="tile-area" value="0"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">㎡</span>
+        </div>
+        <div class="sub-info">철거: 타일공 0.15품/㎡ | 시공: 타일공 0.2품/㎡ | 타일+접착제 25,000원/㎡</div>
+      </div>
+    </div>
+
+    <!-- 합계 -->
+    <div class="area-summary" id="area-summary"></div>
+
+    <!-- 현장 조건 -->
+    <div class="condition-section">
+      <div class="condition-title">현장 조건</div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-protect" checked onchange="recalc()">
+        <div style="flex:1;">
+          <div class="condition-label">주방 바닥 보양</div>
+          <div class="condition-desc">보통인부 0.3품 + 보양 자재 (표준품셈)</div>
+        </div>
+        <span class="cond-cost" id="cost-protect"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-caulk" checked onchange="recalc()">
+        <div style="flex:1;">
+          <div class="condition-label">코킹 마감 (상판·벽면)</div>
+          <div class="condition-desc">설비공 0.1품 + 실리콘</div>
+        </div>
+        <span class="cond-cost" id="cost-caulk"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-test" checked onchange="recalc()">
+        <div style="flex:1;">
+          <div class="condition-label">누수 테스트 (급수·배수)</div>
+          <div class="condition-desc">설비공 0.1품 — 시공 후 필수 확인</div>
+        </div>
+        <span class="cond-cost" id="cost-test"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-mold" onchange="recalc()">
+        <div style="flex:1;">
+          <div class="condition-label">곰팡이 방지 처리</div>
+          <div class="condition-desc">보통인부 — 싱크대 뒷벽 약품 도포</div>
+        </div>
+        <span class="cond-cost" id="cost-mold"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-waste" checked onchange="recalc()">
+        <div style="flex:1;">
+          <div class="condition-label">폐기물 처리 (기존 싱크대 반출)</div>
+          <div class="condition-desc">해체물 반출 + 대형 폐기물 스티커 + 운반</div>
+        </div>
+        <span class="cond-cost" id="cost-waste"></span>
+      </div>
+      <div id="waste-detail" style="display:none; padding:8px 0 0 56px;">
+        <div class="work-row">
+          <span class="work-label">반출 인부</span>
+          <input class="work-input" type="text" inputmode="numeric" id="waste-workers" value="2" style="width:56px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">명</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);">보통인부 @150,316원/일</span>
+        </div>
+        <div class="work-row">
+          <span class="work-label">반출 시간</span>
+          <div class="wallpaper-select">
+            <button class="wp-btn" onclick="wasteHalf='half'; selWaste(this)">반일 (0.5품)</button>
+            <button class="wp-btn selected" onclick="wasteHalf='full'; selWaste(this)">1일 (1.0품)</button>
+          </div>
+        </div>
+        <div class="work-row">
+          <span class="work-label">대형 스티커</span>
+          <input class="work-input" type="text" inputmode="numeric" id="waste-stickers" value="3" style="width:56px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">장 × 30,000원</span>
+        </div>
+        <div class="work-row">
+          <span class="work-label">운반 차량</span>
+          <div class="wallpaper-select">
+            <button class="wp-btn" onclick="wasteTruck='1t'; selWasteTruck(this)">1톤</button>
+            <button class="wp-btn selected" onclick="wasteTruck='25t'; selWasteTruck(this)">2.5톤</button>
+          </div>
+          <span style="font-size:0.75rem; color:var(--gray-400);" id="waste-truck-price"></span>
+        </div>
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-no-elevator" onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.875rem; font-weight:600; color:var(--gray-700);">엘리베이터 없음 (계단 반출)</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);">인부 1명 추가</span>
+        </div>
+        <div class="sub-info">싱크대 = 대형 폐기물 → 해체·반출에 2인 이상 필요 | 타일 잔재 포함 시 물량 증가</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-full btn-lg mt-20" onclick="generateEstimate()">
+      견적 자동 생성
+    </button>
+
+    <div style="height:32px;"></div>
+  </div>
+
+  <script src="../common/trades/unit-prices.js"></script>
+  <script src="../common/components.js"></script>
+  <script src="../common/tab-bar.js"></script>
+  <script>
+    renderTabBar('estimate', '싱크대');
+
+    LTI.renderFeaturePanel({
+      target: '.page-tab',
+      features: [
+        { text: '기준단가 설정 링크 — 노임·자재·품셈 단가 확인/수정' },
+        { text: '싱크대 본체 — 하부장/상부장/장식장(색상통일) 개별 선택 + 길이(m) 기반 품셈 + 철거 포함' },
+        { text: '장식장 색상통일 — 보험업법 제3조 원상복구 원칙 근거 안내 표시' },
+        { text: '씽크볼·부속자재 — 스테인리스/언더마운트 선택 + 홈통·호스·실리콘 개별 체크 + 설비공 품셈' },
+        { text: '상판 교체 — 인조대리석/석영석 선택 + 길이(m) 입력' },
+        { text: '수전 교체 — 수량 입력 + 설비공 품셈' },
+        { text: '배관 연결 — 급수/배수/기존 철거 개별 선택 + 설비공 품셈' },
+        { text: '타일 보수 — 면적(㎡) 입력 + 타일공 품셈' },
+        { text: '현장조건 — 보양·코킹·누수테스트·곰팡이·폐기물 (실시간 금액 표시)' },
+        { text: '★ 폐기물 상세 입력 — 반출 인부 수·반일/1일·스티커 장수·차량(1톤/2.5톤)·엘리베이터 유무' },
+        { text: '설비공·목공·타일공 직종별 품셈 자동 적용' },
+        { text: '견적 자동 생성 → 직종별 품수 + 자재비 + 현장조건 = 총합계' },
+      ],
+    });
+
+    function fmtN(n) { return n.toLocaleString('ko-KR'); }
+    function fmtF(n) { return n % 1 === 0 ? n.toString() : n.toFixed(2); }
+
+    let topType = 'art';
+    let bowlType = 'standard';
+    let wasteHalf = 'full';
+    let wasteTruck = '25t';
+
+    function selWaste(el) {
+      el.parentElement.querySelectorAll('.wp-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      recalc();
+    }
+    function selWasteTruck(el) {
+      el.parentElement.querySelectorAll('.wp-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      recalc();
+    }
+
+    function selBowl(el) {
+      el.parentElement.querySelectorAll('.wp-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      recalc();
+    }
+
+    function toggle(id) {
+      const sec = document.getElementById('sec-' + id);
+      const chk = document.getElementById('chk-' + id);
+      if (chk.checked) sec.classList.add('active');
+      else sec.classList.remove('active');
+      // 폐기물 상세 토글
+      const wd = document.getElementById('waste-detail');
+      if (wd) wd.style.display = document.getElementById('cond-waste').checked ? 'block' : 'none';
+      recalc();
+    }
+
+    function selBtn(el) {
+      el.parentElement.querySelectorAll('.wp-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      const topPrice = topType === 'art' ? '130,000' : '200,000';
+      document.getElementById('top-info').textContent = '목공 0.15품/m · ' + (topType==='art'?'인조대리석':'석영석') + ' ' + topPrice + '원/m';
+      recalc();
+    }
+
+    function recalc() {
+      const P = UNIT_PRICES;
+      const plumber = P.labor.find(l=>l.id==='plumber').price;
+      const carpenter = P.labor.find(l=>l.id==='carpenter').price;
+      const tiler = P.labor.find(l=>l.id==='tiler').price;
+      const general = P.labor.find(l=>l.id==='general').price;
+
+      let lines = [];
+      const lowerLen = parseFloat(document.getElementById('lower-len').value) || 0;
+      const upperLen = parseFloat(document.getElementById('upper-len').value) || 0;
+      const decoLen = parseFloat(document.getElementById('deco-len').value) || 0;
+      const topLen = parseFloat(document.getElementById('top-len').value) || 0;
+
+      if (document.getElementById('chk-body').checked) {
+        if (document.getElementById('chk-lower').checked && lowerLen > 0) lines.push({ label: '하부장', value: fmtF(lowerLen) + 'm' });
+        if (document.getElementById('chk-upper').checked && upperLen > 0) lines.push({ label: '상부장', value: fmtF(upperLen) + 'm' });
+        if (document.getElementById('chk-deco').checked && decoLen > 0) lines.push({ label: '장식장 (색상통일)', value: fmtF(decoLen) + 'm' });
+      }
+      // 씽크볼
+      if (document.getElementById('chk-bowl').checked) {
+        const bowlPrice = bowlType === 'standard' ? 85000 : 150000;
+        let bowlMat = bowlPrice;
+        if (document.getElementById('chk-drain-set').checked) bowlMat += 25000;
+        if (document.getElementById('chk-hose').checked) bowlMat += 12000;
+        if (document.getElementById('chk-sealant').checked) bowlMat += 8000;
+        const bowlLabor = Math.round(0.3 * plumber);
+        document.getElementById('cost-bowl').textContent = fmtN(bowlLabor + bowlMat) + '원';
+        lines.push({ label: '씽크볼+부속', value: (bowlType==='standard'?'스테인리스':'언더마운트') });
+      } else {
+        document.getElementById('cost-bowl').textContent = '';
+      }
+
+      if (document.getElementById('chk-top').checked && topLen > 0) lines.push({ label: '상판', value: fmtF(topLen) + 'm (' + (topType==='art'?'인조대리석':'석영석') + ')' });
+      if (document.getElementById('chk-faucet').checked) {
+        const q = parseInt(document.getElementById('faucet-qty').value) || 0;
+        if (q > 0) lines.push({ label: '수전', value: q + '대' });
+      }
+      if (document.getElementById('chk-pipe').checked) lines.push({ label: '배관', value: '연결' });
+      if (document.getElementById('chk-tile').checked) {
+        const a = parseFloat(document.getElementById('tile-area').value) || 0;
+        if (a > 0) lines.push({ label: '타일 보수', value: fmtF(a) + '㎡' });
+      }
+
+      document.getElementById('area-summary').innerHTML = `
+        <div class="area-summary-title">시공 항목 요약</div>
+        ${lines.length > 0 ? lines.map(l => '<div class="area-row"><span class="area-label">'+l.label+'</span><span class="area-value">'+l.value+'</span></div>').join('') : '<div style="font-size:0.875rem; color:var(--gray-400);">체크한 항목이 없습니다</div>'}
+      `;
+
+      // 현장조건 실시간 금액
+      document.getElementById('cost-protect').textContent =
+        document.getElementById('cond-protect').checked ? fmtN(Math.round(0.3 * general) + 15000) + '원' : '';
+      document.getElementById('cost-caulk').textContent =
+        document.getElementById('cond-caulk').checked ? fmtN(Math.round(0.1 * plumber) + 5000) + '원' : '';
+      document.getElementById('cost-test').textContent =
+        document.getElementById('cond-test').checked ? fmtN(Math.round(0.1 * plumber)) + '원' : '';
+      document.getElementById('cost-mold').textContent =
+        document.getElementById('cond-mold').checked ? fmtN(Math.round(0.3 * general) + 80000) + '원' : '';
+      // 폐기물 상세 계산
+      if (document.getElementById('cond-waste').checked) {
+        const wWorkers = parseInt(document.getElementById('waste-workers').value) || 0;
+        const wPoomRate = wasteHalf === 'full' ? 1.0 : 0.5;
+        const wStickers = parseInt(document.getElementById('waste-stickers').value) || 0;
+        const wTruckPrice = wasteTruck === '25t' ? 120000 : 60000;
+        const wNoElev = document.getElementById('chk-no-elevator').checked ? 1 : 0;
+        const wTotalWorkers = wWorkers + wNoElev;
+        const wLaborCost = Math.round(wTotalWorkers * wPoomRate * general);
+        const wStickerCost = wStickers * 30000;
+        const wasteCost = wLaborCost + wStickerCost + wTruckPrice;
+        document.getElementById('cost-waste').textContent = fmtN(wasteCost) + '원';
+        document.getElementById('waste-truck-price').textContent = wasteTruck === '25t' ? '120,000원' : '60,000원';
+      } else {
+        document.getElementById('cost-waste').textContent = '';
+      }
+    }
+
+    // ===== 견적 자동 생성 =====
+    function generateEstimate() {
+      const chkBody = document.getElementById('chk-body').checked;
+      const chkTop = document.getElementById('chk-top').checked;
+      const chkFaucet = document.getElementById('chk-faucet').checked;
+      const chkPipe = document.getElementById('chk-pipe').checked;
+      const chkTile = document.getElementById('chk-tile').checked;
+
+      if (!chkBody && !chkTop && !chkFaucet && !chkPipe && !chkTile) {
+        LTI.toast('최소 1개 항목을 선택하세요'); return;
+      }
+
+      const P = UNIT_PRICES;
+      const plumber = P.labor.find(l=>l.id==='plumber').price;
+      const carpenter = P.labor.find(l=>l.id==='carpenter').price;
+      const tiler = P.labor.find(l=>l.id==='tiler').price;
+      const general = P.labor.find(l=>l.id==='general').price;
+      const lossRate = 1.1;
+
+      let plumberPoom = 0, carpPoom = 0, tilerPoom = 0, genPoom = 0;
+      let matCost = 0;
+      let details = [];
+
+      // 본체
+      if (chkBody) {
+        const hasLower = document.getElementById('chk-lower').checked;
+        const hasUpper = document.getElementById('chk-upper').checked;
+        const lowerLen = parseFloat(document.getElementById('lower-len').value) || 0;
+        const upperLen = parseFloat(document.getElementById('upper-len').value) || 0;
+        const bodyLen = Math.max(lowerLen, upperLen);
+
+        // 철거 (길이 기반)
+        if (bodyLen > 0) {
+          const rmvPlumb = Math.round(bodyLen * 0.2 * 10) / 10;
+          const rmvGen = Math.round(bodyLen * 0.2 * 10) / 10;
+          plumberPoom += rmvPlumb;
+          genPoom += rmvGen;
+          details.push('싱크대 철거 ' + fmtF(bodyLen) + 'm: 설비공 ' + rmvPlumb + '품 + 보통인부 ' + rmvGen + '품');
+        }
+        if (hasLower && lowerLen > 0) {
+          const instPoom = Math.round(lowerLen * 0.25 * 10) / 10;
+          carpPoom += instPoom;
+          const matPrice = Math.round(lowerLen * P.material.find(m=>m.id==='sink-lower').price);
+          matCost += matPrice;
+          details.push('하부장 ' + fmtF(lowerLen) + 'm: 목공 ' + instPoom + '품(0.25품/m), 자재 ' + fmtN(matPrice) + '원');
+        }
+        if (hasUpper && upperLen > 0) {
+          const instPoom = Math.round(upperLen * 0.15 * 10) / 10;
+          carpPoom += instPoom;
+          const matPrice = Math.round(upperLen * P.material.find(m=>m.id==='sink-upper').price);
+          matCost += matPrice;
+          details.push('상부장 ' + fmtF(upperLen) + 'm: 목공 ' + instPoom + '품(0.15품/m), 자재 ' + fmtN(matPrice) + '원');
+        }
+        const hasDeco = document.getElementById('chk-deco').checked;
+        const decoLen = parseFloat(document.getElementById('deco-len').value) || 0;
+        if (hasDeco && decoLen > 0) {
+          const instPoom = Math.round(decoLen * 0.2 * 10) / 10;
+          carpPoom += instPoom;
+          const matPrice = Math.round(decoLen * P.material.find(m=>m.id==='sink-deco').price);
+          matCost += matPrice;
+          details.push('장식장(색상통일) ' + fmtF(decoLen) + 'm: 목공 ' + instPoom + '품(0.2품/m), 자재 ' + fmtN(matPrice) + '원');
+        }
+      }
+
+      // 씽크볼·부속
+      if (document.getElementById('chk-bowl').checked) {
+        plumberPoom += 0.3;
+        const bowlMatId = bowlType === 'standard' ? 'sink-bowl' : 'sink-bowl-uq';
+        let bowlMat = P.material.find(m=>m.id===bowlMatId).price;
+        let bowlSubs = '';
+        if (document.getElementById('chk-drain-set').checked) { bowlMat += P.material.find(m=>m.id==='sink-drain').price; bowlSubs += '홈통+배수구, '; }
+        if (document.getElementById('chk-hose').checked) { bowlMat += P.material.find(m=>m.id==='sink-hose').price; bowlSubs += '연결호스, '; }
+        if (document.getElementById('chk-sealant').checked) { bowlMat += P.material.find(m=>m.id==='sink-sealant').price; bowlSubs += '실리콘+부속, '; }
+        matCost += bowlMat;
+        details.push('씽크볼(' + (bowlType==='standard'?'스테인리스':'언더마운트') + '): 설비공 0.3품, 자재 ' + fmtN(bowlMat) + '원 (' + bowlSubs.slice(0,-2) + ')');
+      }
+
+      // 상판
+      if (chkTop) {
+        const topLen = parseFloat(document.getElementById('top-len').value) || 0;
+        if (topLen > 0) {
+          const instPoom = Math.round(topLen * 0.15 * 10) / 10;
+          carpPoom += instPoom;
+          const topMatId = topType === 'art' ? 'sink-top-art' : 'sink-top-qtz';
+          const topPrice = Math.round(topLen * P.material.find(m=>m.id===topMatId).price);
+          matCost += topPrice;
+          details.push('상판(' + (topType==='art'?'인조대리석':'석영석') + ') ' + fmtF(topLen) + 'm: 목공 ' + instPoom + '품(0.15품/m), 자재 ' + fmtN(topPrice) + '원');
+        }
+      }
+
+      // 수전
+      if (chkFaucet) {
+        const qty = parseInt(document.getElementById('faucet-qty').value) || 0;
+        if (qty > 0) {
+          plumberPoom += qty * 0.2;
+          matCost += qty * P.material.find(m=>m.id==='sink-faucet').price;
+          details.push('수전 ' + qty + '대: 설비공 ' + fmtF(qty*0.2) + '품, 자재 ' + fmtN(qty*70000) + '원');
+        }
+      }
+
+      // 배관
+      if (chkPipe) {
+        if (document.getElementById('chk-piperemove').checked) {
+          plumberPoom += 0.3;
+          details.push('배관 철거: 설비공 0.3품');
+        }
+        if (document.getElementById('chk-supply').checked) {
+          plumberPoom += 0.3;
+          matCost += P.material.find(m=>m.id==='sink-pipe-s').price;
+          details.push('급수 배관: 설비공 0.3품, 부속 15,000원');
+        }
+        if (document.getElementById('chk-drain').checked) {
+          plumberPoom += 0.2;
+          matCost += P.material.find(m=>m.id==='sink-pipe-d').price;
+          details.push('배수 배관: 설비공 0.2품, 트랩 20,000원');
+        }
+      }
+
+      // 타일
+      if (chkTile) {
+        const area = parseFloat(document.getElementById('tile-area').value) || 0;
+        if (area > 0) {
+          const removePoom = Math.round(area * 0.15 * 10) / 10;
+          const installPoom = Math.round(area * 0.2 * 10) / 10;
+          tilerPoom += removePoom + installPoom;
+          const tileMat = Math.round(area * lossRate * 25000);
+          matCost += tileMat;
+          details.push('타일 ' + fmtF(area) + '㎡: 타일공 철거 ' + removePoom + '품 + 시공 ' + installPoom + '품, 자재 ' + fmtN(tileMat) + '원');
+        }
+      }
+
+      // 현장 조건
+      const hasProtect = document.getElementById('cond-protect').checked;
+      const hasCaulk = document.getElementById('cond-caulk').checked;
+      const hasTest = document.getElementById('cond-test').checked;
+      const hasMold = document.getElementById('cond-mold').checked;
+      const hasWaste = document.getElementById('cond-waste').checked;
+
+      let condMatCost = 0;
+      if (hasProtect) { genPoom += 0.3; condMatCost += 15000; }
+      if (hasCaulk) { plumberPoom += 0.1; condMatCost += 5000; }
+      if (hasTest) { plumberPoom += 0.1; }
+      if (hasMold) { genPoom += 0.3; condMatCost += 80000; }
+      if (hasWaste) {
+        const wWorkers = parseInt(document.getElementById('waste-workers').value) || 0;
+        const wPoomRate = wasteHalf === 'full' ? 1.0 : 0.5;
+        const wStickers = parseInt(document.getElementById('waste-stickers').value) || 0;
+        const wTruckPrice = wasteTruck === '25t' ? 120000 : 60000;
+        const wNoElev = document.getElementById('chk-no-elevator').checked ? 1 : 0;
+        const wTotalWorkers = wWorkers + wNoElev;
+        genPoom += wTotalWorkers * wPoomRate;
+        condMatCost += (wStickers * 30000) + wTruckPrice;
+        details.push('폐기물 반출: 보통인부 ' + wTotalWorkers + '명×' + wPoomRate + '품=' + (wTotalWorkers*wPoomRate) + '품' + (wNoElev ? ' (계단반출 +1명)' : '') + ', 스티커 ' + wStickers + '장, 운반(' + (wasteTruck==='25t'?'2.5톤':'1톤') + ') ' + fmtN(wTruckPrice) + '원');
+      }
+
+      plumberPoom = Math.round(plumberPoom * 10) / 10;
+      carpPoom = Math.round(carpPoom * 10) / 10;
+      tilerPoom = Math.round(tilerPoom * 10) / 10;
+      genPoom = Math.round(genPoom * 10) / 10;
+
+      const plumberLabor = Math.round(plumberPoom * plumber);
+      const carpLabor = Math.round(carpPoom * carpenter);
+      const tilerLabor = Math.round(tilerPoom * tiler);
+      const genLabor = Math.round(genPoom * general) + condMatCost;
+
+      const supply = plumberLabor + carpLabor + tilerLabor + matCost + genLabor;
+      const vat = Math.round(supply * 0.1);
+      const total = supply + vat;
+
+      const summary = `
+        <div style="text-align:left; font-size:0.9375rem; line-height:1.8;">
+          ${plumberPoom > 0 ? '<strong>설비공 작업</strong><br>&nbsp; ' + plumberPoom + '품 × @' + fmtN(plumber) + '원 = <strong>' + fmtN(plumberLabor) + '원</strong><br><br>' : ''}
+          ${carpPoom > 0 ? '<strong>목공 작업</strong><br>&nbsp; ' + carpPoom + '품 × @' + fmtN(carpenter) + '원 = <strong>' + fmtN(carpLabor) + '원</strong><br><br>' : ''}
+          ${tilerPoom > 0 ? '<strong>타일공 작업</strong><br>&nbsp; ' + tilerPoom + '품 × @' + fmtN(tiler) + '원 = <strong>' + fmtN(tilerLabor) + '원</strong><br><br>' : ''}
+          <strong>자재비 합계</strong>: <strong>${fmtN(matCost)}원</strong><br><br>
+          <strong>보통인부 + 현장조건</strong><br>
+          &nbsp; ${genPoom}품 × @${fmtN(general)}원 + 자재·약품 ${fmtN(condMatCost)}원<br>
+          &nbsp; 소계: <strong>${fmtN(genLabor)}원</strong><br><br>
+          <span style="font-size:0.8125rem; color:#888;">
+          ${details.map(d => '&nbsp; · ' + d).join('<br>')}
+          </span><br><br>
+          <div style="border-top:1.5px solid #e8e8e0; padding-top:8px; margin-top:4px;">
+            공급가액: ${fmtN(supply)}원<br>
+            부가세: ${fmtN(vat)}원<br>
+            <span style="font-size:1.125rem; color:#c8871e;"><strong>총합계: ${fmtN(total)}원</strong></span>
+          </div>
+        </div>
+      `;
+
+      LTI.confirm({
+        title: '싱크대 견적 자동 생성 결과',
+        message: summary,
+        confirmText: '확인',
+        cancelText: '수정하기',
+        onConfirm: function() { LTI.toast('견적서가 생성되었습니다'); }
+      });
+    }
+
+    // 초기 폐기물 상세 표시
+    document.getElementById('waste-detail').style.display = document.getElementById('cond-waste').checked ? 'block' : 'none';
+    recalc();
+  </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공사 위임장</title>
+  <link rel="stylesheet" href="common-pdf.css">
+</head>
+<body>
+  <div class="pdf-page">
+
+    <!-- 헤더 -->
+    <div class="pdf-header">
+      <div>
+        <div class="pdf-logo">LeakTube Insurance</div>
+        <div class="pdf-logo-sub">리크튜브 누수 피해복구 보험 처리 시스템</div>
+      </div>
+      <div>
+        <div class="pdf-doc-title">공 사 위 임 장</div>
+        <div class="pdf-doc-no">문서번호: LTI-2026-04-0001</div>
+      </div>
+    </div>
+
+    <!-- 위임인 정보 -->
+    <table class="info-table">
+      <tr>
+        <th>위임인 (피해자)</th>
+        <td>홍 길 동</td>
+        <th>생년월일</th>
+        <td>1990. 01. 01</td>
+      </tr>
+      <tr>
+        <th>연락처</th>
+        <td>010-9876-5432</td>
+        <th>관계</th>
+        <td>세대주 (본인)</td>
+      </tr>
+      <tr>
+        <th>피해 주소</th>
+        <td colspan="3">서울특별시 강남구 테헤란로 123 래미안아파트 102동 1201호</td>
+      </tr>
+    </table>
+
+    <!-- 수임인 정보 -->
+    <table class="info-table">
+      <tr>
+        <th>수임인 (시공업체)</th>
+        <td>리크튜브 ○○지사</td>
+        <th>사업자등록번호</th>
+        <td>123-45-67890</td>
+      </tr>
+      <tr>
+        <th>대표자</th>
+        <td>김 대 표</td>
+        <th>연락처</th>
+        <td>010-1234-5678</td>
+      </tr>
+      <tr>
+        <th>업체 주소</th>
+        <td colspan="3">서울특별시 ○○구 ○○로 ○○길 ○○</td>
+      </tr>
+    </table>
+
+    <!-- 위임 내용 -->
+    <div class="pdf-body" style="margin-top:20px;">
+      <p>본인(위임인)은 아래 기재된 누수 피해 현장의 <strong>원상복구 공사 일체</strong>에 관한 권한을 상기 수임인에게 위임하며, 다음 사항에 동의합니다.</p>
+    </div>
+
+    <ol class="clause-list">
+      <li>수임인은 위임인의 피해 현장에 대해 원상복구 공사를 성실히 수행한다.</li>
+      <li>공사 범위는 별첨 견적서에 명시된 항목에 한하며, 추가 공사 발생 시 위임인의 사전 동의를 받는다.</li>
+      <li>수임인은 공사 전·중·후 과정을 사진 및 영상으로 기록하여 위임인에게 제공한다.</li>
+      <li>공사에 사용되는 자재는 기존 시공 자재와 동일하거나 동등 이상의 등급을 사용한다.</li>
+      <li>자재 단종 등 불가피한 사유로 대체 자재를 사용할 경우, 위임인에게 사전 고지하고 동의를 받는다.</li>
+      <li>수임인은 공사 완료 후 하자 보증 기간(1년)을 제공하며, 하자 발생 시 무상으로 보수한다.</li>
+      <li>본 위임장은 해당 현장의 공사 완료 및 보험금 정산이 완료될 때까지 유효하다.</li>
+    </ol>
+
+    <!-- 사고 정보 -->
+    <table class="info-table" style="margin-top:16px;">
+      <tr>
+        <th>사고 유형</th>
+        <td>누수 피해</td>
+        <th>사고 접수번호</th>
+        <td>2026-A-123456</td>
+      </tr>
+      <tr>
+        <th>보험사</th>
+        <td>삼성화재</td>
+        <th>탐지일</th>
+        <td>2026. 04. 08</td>
+      </tr>
+    </table>
+
+    <!-- 서명 -->
+    <div class="sign-area">
+      <div class="sign-date">2026년 04월 08일</div>
+      <div class="sign-row">
+        <div class="sign-block">
+          <div class="sign-label">위임인 (피해자)</div>
+          <div class="sign-name">홍 길 동</div>
+          <div class="sign-box signed">홍길동</div>
+          <div style="font-size:8pt; color:#a0a098; margin-top:4px;">전자서명 완료</div>
+        </div>
+        <div class="sign-block">
+          <div class="sign-label">수임인 (시공업체)</div>
+          <div class="sign-name">김 대 표</div>
+          <div class="stamp-area">직인</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 부동문자 -->
+    <div class="disclaimer-box" style="margin-top:24px;">
+      본 위임장은 「민법」 제680조에 근거한 적법한 위임 계약서이며, 전자서명법에 의한 전자서명이 포함되어 법적 효력을 가집니다.
+      위임인의 자필 전자서명으로 본 문서의 진정성을 확인합니다.
+    </div>
+
+    <!-- 푸터 -->
+    <div class="pdf-footer">
+      <span>LeakTube Insurance (LTI) | 리크튜브</span>
+      <span>1 / 1</span>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,168 @@
+/* ============================================
+   LTI 목업 공통 탭 바 스타일
+   각 02_피해복구/ 페이지에서 공유
+   ============================================ */
+
+/* --- 탭 바 (가로 스크롤) --- */
+.tab-bar {
+  position: fixed;
+  top: var(--header-height);
+  left: 0; right: 0;
+  background: white;
+  border-bottom: 1px solid var(--gray-200);
+  z-index: 90;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-list {
+  display: flex;
+  min-width: max-content;
+  padding: 0 12px;
+}
+.tab-item {
+  padding: 14px 18px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--gray-400);
+  white-space: nowrap;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  text-decoration: none;
+}
+.tab-item.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+.tab-item:active {
+  background: var(--gray-50);
+}
+
+/* --- 서브 탭 바 --- */
+.sub-tab-bar {
+  position: fixed;
+  top: calc(var(--header-height) + 50px);
+  left: 0; right: 0;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  z-index: 89;
+  display: flex;
+  padding: 0 16px;
+  gap: 4px;
+}
+.sub-tab-item {
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-500);
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  border: none;
+  background: none;
+  transition: all 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+  text-decoration: none;
+}
+.sub-tab-item.active {
+  background: white;
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: 0 -1px 4px rgba(0,0,0,0.04);
+}
+
+/* 페이지 콘텐츠 영역 */
+.page-tab {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: var(--page-padding);
+  padding-top: calc(var(--header-height) + 50px + var(--page-padding));
+  min-height: 100vh;
+}
+.page-tab.has-sub-tabs {
+  padding-top: calc(var(--header-height) + 50px + 44px + var(--page-padding));
+}
+
+/* --- 공통: 상태 행 --- */
+.status-row {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  border: 1.5px solid var(--gray-200);
+  cursor: pointer;
+  gap: 14px;
+  transition: all 0.15s;
+}
+.status-row:active {
+  background: var(--gray-50);
+  transform: scale(0.98);
+}
+.status-row.completed {
+  border-color: var(--success);
+  background: var(--success-bg);
+}
+.status-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.125rem;
+}
+.status-icon.pending {
+  background: var(--gray-200);
+  color: var(--gray-500);
+}
+.status-icon.done {
+  background: var(--success);
+  color: white;
+}
+.status-body {
+  flex: 1;
+  min-width: 0;
+}
+.status-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+.status-value {
+  font-size: 0.9375rem;
+  color: var(--gray-500);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.status-row.completed .status-value {
+  color: var(--success);
+}
+.status-badge {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+.status-badge.pending {
+  background: var(--gray-200);
+  color: var(--gray-500);
+}
+.status-badge.done {
+  background: var(--success-bg);
+  color: var(--success);
+}

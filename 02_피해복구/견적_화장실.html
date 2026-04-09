@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — 견적 (화장실)</title>
+  <link rel="stylesheet" href="../common/style.css">
+  <link rel="stylesheet" href="../common/tab-bar.css">
+  <style>
+    .work-section { background:white; border:1.5px solid var(--gray-200); border-radius:14px; margin-bottom:14px; overflow:hidden; }
+    .work-section.active { border-color:var(--primary); }
+    .work-header { display:flex; align-items:center; padding:16px; gap:10px; }
+    .work-check { width:24px; height:24px; accent-color:var(--primary); flex-shrink:0; }
+    .work-title { flex:1; font-size:1.0625rem; font-weight:700; color:var(--gray-800); }
+    .work-ref { font-size:0.6875rem; color:var(--gray-400); white-space:nowrap; }
+    .work-body { padding:0 16px 16px; display:none; }
+    .work-section.active .work-body { display:block; }
+    .work-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+    .work-label { font-size:0.875rem; color:var(--gray-500); min-width:70px; }
+    .work-input { width:72px; text-align:center; padding:10px 6px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:1rem; font-weight:600; color:var(--gray-800); }
+    .work-input:focus { border-color:var(--primary); outline:none; }
+    .work-unit { font-size:0.875rem; color:var(--gray-500); }
+    .wp-btn { padding:6px 14px; border:1.5px solid var(--gray-200); border-radius:8px; background:white; font-size:0.875rem; font-weight:600; color:var(--gray-500); cursor:pointer; }
+    .wp-btn.selected { border-color:var(--primary); background:var(--primary-bg); color:var(--primary); }
+    .wallpaper-select { display:flex; gap:6px; }
+    .sub-info { font-size:0.75rem; color:var(--gray-400); margin-top:4px; padding-left:4px; line-height:1.6; }
+    .area-summary { background:white; border:1.5px solid var(--gray-200); border-radius:14px; padding:16px; margin-bottom:16px; }
+    .area-summary-title { font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:10px; }
+    .area-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; }
+    .area-label { font-size:0.9375rem; color:var(--gray-600); }
+    .area-value { font-size:0.9375rem; font-weight:700; color:var(--gray-800); }
+    .area-value.primary { color:var(--primary); font-size:1.125rem; }
+    .condition-section { background:white; border:1.5px solid var(--gray-200); border-radius:14px; padding:16px; margin-bottom:16px; }
+    .condition-title { font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:12px; }
+    .condition-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--gray-100); }
+    .condition-item:last-child { border-bottom:none; }
+    .condition-check { width:24px; height:24px; accent-color:var(--primary); }
+    .condition-label { font-size:0.9375rem; font-weight:600; color:var(--gray-700); }
+    .condition-desc { font-size:0.75rem; color:var(--gray-400); }
+    .cond-cost { font-size:0.8125rem; font-weight:700; color:var(--primary); white-space:nowrap; min-width:70px; text-align:right; }
+    .price-link { display:flex; align-items:center; gap:8px; padding:12px 16px; background:var(--info-bg); border-radius:10px; margin-bottom:16px; text-decoration:none; color:var(--info); font-size:0.875rem; font-weight:600; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="../01_현장상세.html" class="header-back" aria-label="뒤로가기">&#8249;</a>
+    <div class="header-title">아랫집 피해복구</div>
+    <div class="header-action"></div>
+  </div>
+
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="sub-tab-bar" id="sub-tab-bar"></div>
+
+  <div class="page-tab">
+
+    <a href="견적_단가설정.html" class="price-link">
+      <span>&#9881;</span>
+      <span>기준단가 설정 (2026년 상반기 적용중)</span>
+      <span style="margin-left:auto; font-size:1.25rem;">&#8250;</span>
+    </a>
+
+    <!-- 1. 타일 공사 -->
+    <div class="work-section" id="sec-tile">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-tile" onchange="toggle('tile')">
+        <div>
+          <div class="work-title">타일 공사</div>
+          <div class="work-ref">표준품셈 4장 타일공사</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-tile-floor" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">바닥 타일</span>
+        </div>
+        <div class="work-row" style="padding-left:28px;">
+          <span class="work-label">면적</span>
+          <input class="work-input" type="text" inputmode="decimal" id="tile-floor-area" value="0"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">㎡</span>
+        </div>
+        <div class="sub-info" style="margin-bottom:14px;">철거: 보통인부 0.15품/㎡ | 시공: 타일공 0.25품/㎡ | 자재 35,000원/㎡</div>
+
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-tile-wall" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">벽면 타일</span>
+        </div>
+        <div class="work-row" style="padding-left:28px;">
+          <span class="work-label">면적</span>
+          <input class="work-input" type="text" inputmode="decimal" id="tile-wall-area" value="0"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">㎡</span>
+        </div>
+        <div class="sub-info" style="margin-bottom:14px;">철거: 보통인부 0.12품/㎡ | 시공: 타일공 0.2품/㎡ | 자재 30,000원/㎡</div>
+
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-grout" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">줄눈 시공</span>
+          <span style="font-size:0.8125rem; color:var(--gray-400); margin-left:auto;" id="grout-auto">타일 면적 합계에서 자동 계산</span>
+        </div>
+        <div class="sub-info">타일공 0.05품/㎡ | 줄눈재 3,000원/kg (0.3kg/㎡)</div>
+      </div>
+    </div>
+
+    <!-- 2. 방수 공사 -->
+    <div class="work-section" id="sec-waterproof">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-waterproof" onchange="toggle('waterproof')">
+        <div>
+          <div class="work-title">방수 공사</div>
+          <div class="work-ref">표준품셈 방수공사</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-wp-floor" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">바닥 방수</span>
+        </div>
+        <div class="work-row" style="padding-left:28px;">
+          <span class="work-label">면적</span>
+          <input class="work-input" type="text" inputmode="decimal" id="wp-floor-area" value="0"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">㎡</span>
+        </div>
+        <div class="sub-info" style="margin-bottom:14px;">방수공 0.2품/㎡ | 방수재 15,000원/㎡</div>
+
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-wp-wall" onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">벽면 방수 (30cm↑)</span>
+          <span style="font-size:0.8125rem; color:var(--gray-400); margin-left:auto;" id="wp-wall-auto">바닥 면적의 절반 추정</span>
+        </div>
+        <div class="sub-info" style="margin-bottom:14px;">방수공 0.2품/㎡ | 방수재 15,000원/㎡</div>
+
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-damsu" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">담수 테스트 (48시간)</span>
+          <span style="font-size:0.8125rem; color:var(--gray-400); margin-left:auto;">설비공 0.3품</span>
+        </div>
+        <div style="padding:0 16px 12px; font-size:0.75rem; color:var(--info); font-weight:600;">※ 담수 테스트 48시간 필수 — 방수 시공 후 누수 재발 방지 확인, 하자 보증 조건</div>
+      </div>
+    </div>
+
+    <!-- 3. 위생도기 -->
+    <div class="work-section" id="sec-sanitary">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-sanitary" onchange="toggle('sanitary')">
+        <div>
+          <div class="work-title">위생도기</div>
+          <div class="work-ref">표준품셈 7장 설비공사 · 설비공 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <!-- 양변기 -->
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-toilet" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">양변기</span>
+        </div>
+        <div class="work-row" style="padding-left:28px;">
+          <span class="work-label">수량</span>
+          <input class="work-input" type="text" inputmode="numeric" id="toilet-qty" value="1" style="width:56px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">대</span>
+          <div class="wallpaper-select" style="margin-left:auto;">
+            <button class="wp-btn selected" onclick="toiletType='reinstall'; selBtnGroup(this); recalc()">재설치</button>
+            <button class="wp-btn" onclick="toiletType='new'; selBtnGroup(this); recalc()">신품교체</button>
+          </div>
+        </div>
+        <div class="sub-info" id="toilet-info" style="margin-bottom:14px;">재설치: 설비공 철거0.3+설치0.3=0.6품, 부속 20,000원</div>
+
+        <!-- 세면대 -->
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-basin" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">세면대</span>
+        </div>
+        <div class="work-row" style="padding-left:28px;">
+          <span class="work-label">수량</span>
+          <input class="work-input" type="text" inputmode="numeric" id="basin-qty" value="1" style="width:56px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">대</span>
+          <div class="wallpaper-select" style="margin-left:auto;">
+            <button class="wp-btn selected" onclick="basinType='reinstall'; selBtnGroup(this); recalc()">재설치</button>
+            <button class="wp-btn" onclick="basinType='new'; selBtnGroup(this); recalc()">신품교체</button>
+          </div>
+        </div>
+        <div class="sub-info" id="basin-info" style="margin-bottom:14px;">재설치: 설비공 철거0.2+설치0.3=0.5품</div>
+
+        <!-- 욕조/샤워부스 -->
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-bath" onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">욕조/샤워부스</span>
+        </div>
+        <div class="work-row" style="padding-left:28px;">
+          <span class="work-label">수량</span>
+          <input class="work-input" type="text" inputmode="numeric" id="bath-qty" value="1" style="width:56px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">대</span>
+        </div>
+        <div class="sub-info">재설치: 설비공 0.5품 + 보통인부 0.5품 = 1.0품</div>
+      </div>
+    </div>
+
+    <!-- 4. 천장 (돔천장) -->
+    <div class="work-section" id="sec-ceiling">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-ceiling" onchange="toggle('ceiling')">
+        <div>
+          <div class="work-title">천장 (돔천장)</div>
+          <div class="work-ref">보통인부 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">방식</span>
+          <div class="wallpaper-select">
+            <button class="wp-btn selected" onclick="ceilingType='reinstall'; selBtnGroup(this); recalc()">재설치</button>
+            <button class="wp-btn" onclick="ceilingType='new'; selBtnGroup(this); recalc()">신품교체</button>
+          </div>
+        </div>
+        <div class="sub-info" id="ceiling-info">재설치: 보통인부 철거0.3+설치0.3=0.6품, 부속 30,000원</div>
+      </div>
+    </div>
+
+    <!-- 5. 악세사리 -->
+    <div class="work-section" id="sec-accy">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-accy" onchange="toggle('accy')">
+        <div>
+          <div class="work-title">악세사리</div>
+          <div class="work-ref">보통인부·전기공 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-towel" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">수건걸이·휴지걸이</span>
+          <span style="font-size:0.8125rem; color:var(--gray-400); margin-left:auto;">보통인부 0.2품 + 앙카볼트 5,000원</span>
+        </div>
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-mirror" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">거울·수납장</span>
+          <span style="font-size:0.8125rem; color:var(--gray-400); margin-left:auto;">보통인부 0.4품 + 부속 10,000원</span>
+        </div>
+        <div class="work-row">
+          <input class="work-check" type="checkbox" id="chk-fan" checked onchange="recalc()" style="width:20px;height:20px;">
+          <span style="font-size:0.9375rem; font-weight:600; color:var(--gray-700);">환풍기</span>
+          <span style="font-size:0.8125rem; color:var(--gray-400); margin-left:auto;">전기공 0.2품</span>
+        </div>
+        <div class="sub-info">철거+설치 포함 품셈</div>
+      </div>
+    </div>
+
+    <!-- 합계 -->
+    <div class="area-summary" id="area-summary"></div>
+
+    <!-- 현장 조건 -->
+    <div class="condition-section">
+      <div class="condition-title">현장 조건</div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-protect" checked onchange="recalc()">
+        <div style="flex:1;">
+          <div class="condition-label">입구 보양</div>
+          <div class="condition-desc">보통인부 0.2품 + 보양비닐 10,000원</div>
+        </div>
+        <span class="cond-cost" id="cost-protect"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-shutoff" checked onchange="recalc()">
+        <div style="flex:1;">
+          <div class="condition-label">급수 차단</div>
+          <div class="condition-desc">설비공 0.1품</div>
+        </div>
+        <span class="cond-cost" id="cost-shutoff"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-caulk" checked onchange="recalc()">
+        <div style="flex:1;">
+          <div class="condition-label">코킹 마감</div>
+          <div class="condition-desc">설비공 0.2품 + 실리콘 10,000원</div>
+        </div>
+        <span class="cond-cost" id="cost-caulk"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-test" checked onchange="recalc()">
+        <div style="flex:1;">
+          <div class="condition-label">급배수 테스트</div>
+          <div class="condition-desc">설비공 0.1품 — 시공 후 필수 확인</div>
+        </div>
+        <span class="cond-cost" id="cost-test"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-waste" checked onchange="recalc()">
+        <div style="flex:1;">
+          <div class="condition-label">폐기물 처리</div>
+          <div class="condition-desc">보통인부 1.0품 + 스티커 50,000원 + 운반 80,000원</div>
+        </div>
+        <span class="cond-cost" id="cost-waste"></span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-full btn-lg mt-20" onclick="generateEstimate()">
+      견적 자동 생성
+    </button>
+
+    <div style="height:32px;"></div>
+  </div>
+
+  <script src="../common/trades/unit-prices.js"></script>
+  <script src="../common/components.js"></script>
+  <script src="../common/tab-bar.js"></script>
+  <script>
+    renderTabBar('estimate', '화장실');
+
+    LTI.renderFeaturePanel({
+      target: '.page-tab',
+      features: [
+        { text: '기준단가 설정 링크 — 노임·자재·품셈 단가 확인/수정' },
+        { text: '타일 공사 — 바닥(0.25품/㎡)/벽면(0.2품/㎡) 면적 입력 + 철거(보통인부) + 시공(타일공) + 줄눈 자동' },
+        { text: '방수 공사 — 바닥 방수(0.2품/㎡) + 벽면 방수(바닥 50% 자동 추정) + 담수 테스트 48시간 필수' },
+        { text: '★ 담수 테스트 48시간 — 방수 시공 후 누수 재발 방지 확인, 하자 보증 조건' },
+        { text: '위생도기 — 양변기/세면대(재설치/신품 선택·수량) + 욕조/샤워부스' },
+        { text: '천장 (돔천장) — 재설치/신품교체 선택' },
+        { text: '악세사리 — 수건걸이·휴지걸이/거울·수납장/환풍기 개별 선택' },
+        { text: '타일공·설비공·방수공·전기공·보통인부 5개 직종별 품셈 자동 적용' },
+        { text: '현장조건 — 입구보양·급수차단·코킹마감·급배수테스트·폐기물 (실시간 금액 표시)' },
+        { text: '견적 자동 생성 → 5개 직종별 품수 + 자재비 + 현장조건 + VAT = 총합계' },
+      ],
+    });
+
+    function fmtN(n) { return n.toLocaleString('ko-KR'); }
+    function fmtF(n) { return n % 1 === 0 ? n.toString() : n.toFixed(2); }
+
+    let toiletType = 'reinstall';
+    let basinType = 'reinstall';
+    let ceilingType = 'reinstall';
+
+    function toggle(id) {
+      const sec = document.getElementById('sec-' + id);
+      const chk = document.getElementById('chk-' + id);
+      if (chk.checked) sec.classList.add('active');
+      else sec.classList.remove('active');
+      recalc();
+    }
+
+    function selBtnGroup(el) {
+      el.parentElement.querySelectorAll('.wp-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function recalc() {
+      const P = UNIT_PRICES;
+      const tiler = P.labor.find(l=>l.id==='tiler').price;
+      const plumber = P.labor.find(l=>l.id==='plumber').price;
+      const waterproof = P.labor.find(l=>l.id==='waterproof').price;
+      const electric = P.labor.find(l=>l.id==='electric').price;
+      const general = P.labor.find(l=>l.id==='general').price;
+
+      // 위생도기 info 업데이트
+      if (toiletType === 'reinstall') {
+        document.getElementById('toilet-info').textContent = '재설치: 설비공 철거0.3+설치0.3=0.6품, 부속 20,000원';
+      } else {
+        document.getElementById('toilet-info').textContent = '신품교체: 설비공 철거0.3+설치0.5=0.8품, 양변기 220,000원';
+      }
+      if (basinType === 'reinstall') {
+        document.getElementById('basin-info').textContent = '재설치: 설비공 철거0.2+설치0.3=0.5품';
+      } else {
+        document.getElementById('basin-info').textContent = '신품교체: 설비공 0.7품 + 세면대+수전 180,000원';
+      }
+      if (ceilingType === 'reinstall') {
+        document.getElementById('ceiling-info').textContent = '재설치: 보통인부 철거0.3+설치0.3=0.6품, 부속 30,000원';
+      } else {
+        document.getElementById('ceiling-info').textContent = '신품교체: 보통인부 0.6품 + 돔천장 160,000원';
+      }
+
+      // 줄눈 면적 자동 표시
+      const flArea = parseFloat(document.getElementById('tile-floor-area').value) || 0;
+      const wallArea = parseFloat(document.getElementById('tile-wall-area').value) || 0;
+      const totalTileArea = flArea + wallArea;
+      document.getElementById('grout-auto').textContent = '타일 합계 ' + fmtF(totalTileArea) + '㎡ 자동 적용';
+
+      // 벽면 방수 자동 표시
+      const wpFloorArea = parseFloat(document.getElementById('wp-floor-area').value) || 0;
+      document.getElementById('wp-wall-auto').textContent = '바닥 ' + fmtF(wpFloorArea) + '㎡ × 0.5 = ' + fmtF(wpFloorArea * 0.5) + '㎡ 추정';
+
+      // 시공 항목 요약
+      let lines = [];
+      if (document.getElementById('chk-tile').checked) {
+        if (flArea > 0) lines.push({ label: '바닥 타일', value: fmtF(flArea) + '㎡' });
+        if (wallArea > 0) lines.push({ label: '벽면 타일', value: fmtF(wallArea) + '㎡' });
+        if (totalTileArea > 0 && document.getElementById('chk-grout').checked) lines.push({ label: '줄눈 시공', value: fmtF(totalTileArea) + '㎡' });
+      }
+      if (document.getElementById('chk-waterproof').checked) {
+        if (wpFloorArea > 0) lines.push({ label: '바닥 방수', value: fmtF(wpFloorArea) + '㎡' });
+        if (document.getElementById('chk-wp-wall').checked) lines.push({ label: '벽면 방수', value: fmtF(wpFloorArea * 0.5) + '㎡' });
+        if (document.getElementById('chk-damsu').checked) lines.push({ label: '담수 테스트', value: '48시간' });
+      }
+      if (document.getElementById('chk-sanitary').checked) {
+        const tQty = parseInt(document.getElementById('toilet-qty').value) || 0;
+        const bQty = parseInt(document.getElementById('basin-qty').value) || 0;
+        const bathQty = parseInt(document.getElementById('bath-qty').value) || 0;
+        if (document.getElementById('chk-toilet').checked && tQty > 0) lines.push({ label: '양변기', value: tQty + '대 (' + (toiletType==='reinstall'?'재설치':'신품') + ')' });
+        if (document.getElementById('chk-basin').checked && bQty > 0) lines.push({ label: '세면대', value: bQty + '대 (' + (basinType==='reinstall'?'재설치':'신품') + ')' });
+        if (document.getElementById('chk-bath').checked && bathQty > 0) lines.push({ label: '욕조/샤워부스', value: bathQty + '대' });
+      }
+      if (document.getElementById('chk-ceiling').checked) lines.push({ label: '돔천장', value: ceilingType==='reinstall'?'재설치':'신품교체' });
+      if (document.getElementById('chk-accy').checked) {
+        let accyItems = [];
+        if (document.getElementById('chk-towel').checked) accyItems.push('수건걸이');
+        if (document.getElementById('chk-mirror').checked) accyItems.push('거울');
+        if (document.getElementById('chk-fan').checked) accyItems.push('환풍기');
+        if (accyItems.length > 0) lines.push({ label: '악세사리', value: accyItems.join('·') });
+      }
+
+      document.getElementById('area-summary').innerHTML = `
+        <div class="area-summary-title">시공 항목 요약</div>
+        ${lines.length > 0 ? lines.map(l => '<div class="area-row"><span class="area-label">'+l.label+'</span><span class="area-value">'+l.value+'</span></div>').join('') : '<div style="font-size:0.875rem; color:var(--gray-400);">체크한 항목이 없습니다</div>'}
+      `;
+
+      // 현장조건 실시간 금액
+      document.getElementById('cost-protect').textContent =
+        document.getElementById('cond-protect').checked ? fmtN(Math.round(0.2 * general) + 10000) + '원' : '';
+      document.getElementById('cost-shutoff').textContent =
+        document.getElementById('cond-shutoff').checked ? fmtN(Math.round(0.1 * plumber)) + '원' : '';
+      document.getElementById('cost-caulk').textContent =
+        document.getElementById('cond-caulk').checked ? fmtN(Math.round(0.2 * plumber) + 10000) + '원' : '';
+      document.getElementById('cost-test').textContent =
+        document.getElementById('cond-test').checked ? fmtN(Math.round(0.1 * plumber)) + '원' : '';
+      const wasteCost = Math.round(1.0 * general) + 50000 + 80000;
+      document.getElementById('cost-waste').textContent =
+        document.getElementById('cond-waste').checked ? fmtN(wasteCost) + '원' : '';
+    }
+
+    // ===== 견적 자동 생성 =====
+    function generateEstimate() {
+      const chkTile = document.getElementById('chk-tile').checked;
+      const chkWaterproof = document.getElementById('chk-waterproof').checked;
+      const chkSanitary = document.getElementById('chk-sanitary').checked;
+      const chkCeiling = document.getElementById('chk-ceiling').checked;
+      const chkAccy = document.getElementById('chk-accy').checked;
+
+      if (!chkTile && !chkWaterproof && !chkSanitary && !chkCeiling && !chkAccy) {
+        LTI.toast('최소 1개 항목을 선택하세요'); return;
+      }
+
+      const P = UNIT_PRICES;
+      const tiler = P.labor.find(l=>l.id==='tiler').price;
+      const plumber = P.labor.find(l=>l.id==='plumber').price;
+      const wpLabor = P.labor.find(l=>l.id==='waterproof').price;
+      const electric = P.labor.find(l=>l.id==='electric').price;
+      const general = P.labor.find(l=>l.id==='general').price;
+      const lossRate = 1.1;
+
+      let tilerPoom = 0, plumberPoom = 0, wpPoom = 0, electricPoom = 0, genPoom = 0;
+      let matCost = 0;
+      let details = [];
+
+      // 1. 타일 공사
+      if (chkTile) {
+        const flArea = parseFloat(document.getElementById('tile-floor-area').value) || 0;
+        const wallArea = parseFloat(document.getElementById('tile-wall-area').value) || 0;
+
+        if (document.getElementById('chk-tile-floor').checked && flArea > 0) {
+          const rmvPoom = Math.round(flArea * 0.15 * 100) / 100;
+          const instPoom = Math.round(flArea * 0.25 * 100) / 100;
+          genPoom += rmvPoom;
+          tilerPoom += instPoom;
+          const tileMat = Math.round(flArea * lossRate * 35000);
+          matCost += tileMat;
+          details.push('바닥 타일 ' + fmtF(flArea) + '㎡: 보통인부 철거 ' + fmtF(rmvPoom) + '품 + 타일공 시공 ' + fmtF(instPoom) + '품, 자재 ' + fmtN(tileMat) + '원');
+        }
+
+        if (document.getElementById('chk-tile-wall').checked && wallArea > 0) {
+          const rmvPoom = Math.round(wallArea * 0.12 * 100) / 100;
+          const instPoom = Math.round(wallArea * 0.2 * 100) / 100;
+          genPoom += rmvPoom;
+          tilerPoom += instPoom;
+          const tileMat = Math.round(wallArea * lossRate * 30000);
+          matCost += tileMat;
+          details.push('벽면 타일 ' + fmtF(wallArea) + '㎡: 보통인부 철거 ' + fmtF(rmvPoom) + '품 + 타일공 시공 ' + fmtF(instPoom) + '품, 자재 ' + fmtN(tileMat) + '원');
+        }
+
+        const totalTileArea = (document.getElementById('chk-tile-floor').checked ? flArea : 0)
+                            + (document.getElementById('chk-tile-wall').checked ? wallArea : 0);
+        if (document.getElementById('chk-grout').checked && totalTileArea > 0) {
+          const groutPoom = Math.round(totalTileArea * 0.05 * 100) / 100;
+          tilerPoom += groutPoom;
+          const groutKg = Math.round(totalTileArea * 0.3 * 10) / 10;
+          const groutMat = Math.round(groutKg * 3000);
+          matCost += groutMat;
+          details.push('줄눈 시공 ' + fmtF(totalTileArea) + '㎡: 타일공 ' + fmtF(groutPoom) + '품, 줄눈재 ' + fmtF(groutKg) + 'kg ' + fmtN(groutMat) + '원');
+        }
+      }
+
+      // 2. 방수 공사
+      if (chkWaterproof) {
+        const wpFlArea = parseFloat(document.getElementById('wp-floor-area').value) || 0;
+
+        if (document.getElementById('chk-wp-floor').checked && wpFlArea > 0) {
+          const poom = Math.round(wpFlArea * 0.2 * 100) / 100;
+          wpPoom += poom;
+          const wpMat = Math.round(wpFlArea * 15000);
+          matCost += wpMat;
+          details.push('바닥 방수 ' + fmtF(wpFlArea) + '㎡: 방수공 ' + fmtF(poom) + '품, 방수재 ' + fmtN(wpMat) + '원');
+        }
+
+        if (document.getElementById('chk-wp-wall').checked && wpFlArea > 0) {
+          const wallWpArea = Math.round(wpFlArea * 0.5 * 10) / 10;
+          const poom = Math.round(wallWpArea * 0.2 * 100) / 100;
+          wpPoom += poom;
+          const wpMat = Math.round(wallWpArea * 15000);
+          matCost += wpMat;
+          details.push('벽면 방수 ' + fmtF(wallWpArea) + '㎡: 방수공 ' + fmtF(poom) + '품, 방수재 ' + fmtN(wpMat) + '원');
+        }
+
+        if (document.getElementById('chk-damsu').checked) {
+          plumberPoom += 0.3;
+          details.push('담수 테스트: 설비공 0.3품 (48시간)');
+        }
+      }
+
+      // 3. 위생도기
+      if (chkSanitary) {
+        // 양변기
+        if (document.getElementById('chk-toilet').checked) {
+          const qty = parseInt(document.getElementById('toilet-qty').value) || 0;
+          if (qty > 0) {
+            if (toiletType === 'reinstall') {
+              plumberPoom += qty * 0.6;
+              matCost += qty * 20000;
+              details.push('양변기 재설치 ' + qty + '대: 설비공 ' + fmtF(qty*0.6) + '품, 부속 ' + fmtN(qty*20000) + '원');
+            } else {
+              plumberPoom += qty * 0.8;
+              matCost += qty * 220000;
+              details.push('양변기 신품교체 ' + qty + '대: 설비공 ' + fmtF(qty*0.8) + '품, 양변기 ' + fmtN(qty*220000) + '원');
+            }
+          }
+        }
+
+        // 세면대
+        if (document.getElementById('chk-basin').checked) {
+          const qty = parseInt(document.getElementById('basin-qty').value) || 0;
+          if (qty > 0) {
+            if (basinType === 'reinstall') {
+              plumberPoom += qty * 0.5;
+              details.push('세면대 재설치 ' + qty + '대: 설비공 ' + fmtF(qty*0.5) + '품');
+            } else {
+              plumberPoom += qty * 0.7;
+              matCost += qty * 180000;
+              details.push('세면대 신품교체 ' + qty + '대: 설비공 ' + fmtF(qty*0.7) + '품, 세면대+수전 ' + fmtN(qty*180000) + '원');
+            }
+          }
+        }
+
+        // 욕조/샤워부스
+        if (document.getElementById('chk-bath').checked) {
+          const qty = parseInt(document.getElementById('bath-qty').value) || 0;
+          if (qty > 0) {
+            plumberPoom += qty * 0.5;
+            genPoom += qty * 0.5;
+            details.push('욕조/샤워부스 재설치 ' + qty + '대: 설비공 ' + fmtF(qty*0.5) + '품 + 보통인부 ' + fmtF(qty*0.5) + '품');
+          }
+        }
+      }
+
+      // 4. 천장 (돔천장)
+      if (chkCeiling) {
+        if (ceilingType === 'reinstall') {
+          genPoom += 0.6;
+          matCost += 30000;
+          details.push('돔천장 재설치: 보통인부 0.6품, 부속 30,000원');
+        } else {
+          genPoom += 0.6;
+          matCost += 160000;
+          details.push('돔천장 신품교체: 보통인부 0.6품, 돔천장 160,000원');
+        }
+      }
+
+      // 5. 악세사리
+      if (chkAccy) {
+        if (document.getElementById('chk-towel').checked) {
+          genPoom += 0.2;
+          matCost += 5000;
+          details.push('수건걸이·휴지걸이: 보통인부 0.2품, 앙카볼트 5,000원');
+        }
+        if (document.getElementById('chk-mirror').checked) {
+          genPoom += 0.4;
+          matCost += 10000;
+          details.push('거울·수납장: 보통인부 0.4품, 부속 10,000원');
+        }
+        if (document.getElementById('chk-fan').checked) {
+          electricPoom += 0.2;
+          details.push('환풍기: 전기공 0.2품');
+        }
+      }
+
+      // 현장 조건
+      const hasProtect = document.getElementById('cond-protect').checked;
+      const hasShutoff = document.getElementById('cond-shutoff').checked;
+      const hasCaulk = document.getElementById('cond-caulk').checked;
+      const hasTest = document.getElementById('cond-test').checked;
+      const hasWaste = document.getElementById('cond-waste').checked;
+
+      let condMatCost = 0;
+      if (hasProtect) { genPoom += 0.2; condMatCost += 10000; }
+      if (hasShutoff) { plumberPoom += 0.1; }
+      if (hasCaulk) { plumberPoom += 0.2; condMatCost += 10000; }
+      if (hasTest) { plumberPoom += 0.1; }
+      if (hasWaste) { genPoom += 1.0; condMatCost += 50000 + 80000; }
+
+      tilerPoom = Math.round(tilerPoom * 100) / 100;
+      plumberPoom = Math.round(plumberPoom * 100) / 100;
+      wpPoom = Math.round(wpPoom * 100) / 100;
+      electricPoom = Math.round(electricPoom * 100) / 100;
+      genPoom = Math.round(genPoom * 100) / 100;
+
+      const tilerLabor = Math.round(tilerPoom * tiler);
+      const plumberLabor = Math.round(plumberPoom * plumber);
+      const wpLaborCost = Math.round(wpPoom * wpLabor);
+      const electricLabor = Math.round(electricPoom * electric);
+      const genLabor = Math.round(genPoom * general) + condMatCost;
+
+      const supply = tilerLabor + plumberLabor + wpLaborCost + electricLabor + matCost + genLabor;
+      const vat = Math.round(supply * 0.1);
+      const total = supply + vat;
+
+      const summary = `
+        <div style="text-align:left; font-size:0.9375rem; line-height:1.8;">
+          ${tilerPoom > 0 ? '<strong>타일공 작업</strong><br>&nbsp; ' + fmtF(tilerPoom) + '품 × @' + fmtN(tiler) + '원 = <strong>' + fmtN(tilerLabor) + '원</strong><br><br>' : ''}
+          ${plumberPoom > 0 ? '<strong>설비공 작업</strong><br>&nbsp; ' + fmtF(plumberPoom) + '품 × @' + fmtN(plumber) + '원 = <strong>' + fmtN(plumberLabor) + '원</strong><br><br>' : ''}
+          ${wpPoom > 0 ? '<strong>방수공 작업</strong><br>&nbsp; ' + fmtF(wpPoom) + '품 × @' + fmtN(wpLabor) + '원 = <strong>' + fmtN(wpLaborCost) + '원</strong><br><br>' : ''}
+          ${electricPoom > 0 ? '<strong>전기공 작업</strong><br>&nbsp; ' + fmtF(electricPoom) + '품 × @' + fmtN(electric) + '원 = <strong>' + fmtN(electricLabor) + '원</strong><br><br>' : ''}
+          <strong>자재비 합계</strong>: <strong>${fmtN(matCost)}원</strong><br><br>
+          <strong>보통인부 + 현장조건</strong><br>
+          &nbsp; ${fmtF(genPoom)}품 × @${fmtN(general)}원 + 자재·부속 ${fmtN(condMatCost)}원<br>
+          &nbsp; 소계: <strong>${fmtN(genLabor)}원</strong><br><br>
+          <span style="font-size:0.8125rem; color:#888;">
+          ${details.map(d => '&nbsp; · ' + d).join('<br>')}
+          </span><br><br>
+          <div style="border-top:1.5px solid #e8e8e0; padding-top:8px; margin-top:4px;">
+            공급가액: ${fmtN(supply)}원<br>
+            부가세: ${fmtN(vat)}원<br>
+            <span style="font-size:1.125rem; color:#c8871e;"><strong>총합계: ${fmtN(total)}원</strong></span>
+          </div>
+        </div>
+      `;
+
+      LTI.confirm({
+        title: '화장실 견적 자동 생성 결과',
+        message: summary,
+        confirmText: '확인',
+        cancelText: '수정하기',
+        onConfirm: function() { LTI.toast('견적서가 생성되었습니다'); }
+      });
+    }
+
+    recalc();
+  </script>
+</body>
+</html>

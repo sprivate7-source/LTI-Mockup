@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — 기준단가 설정</title>
+  <link rel="stylesheet" href="../common/style.css">
+  <style>
+    /* --- 단가 설정 전용 스타일 --- */
+    .price-section {
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 14px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .price-section-header {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      background: var(--primary-bg);
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .price-section-header:active {
+      background: #f5e6c8;
+    }
+    .price-section-icon {
+      font-size: 1.25rem;
+      width: 28px;
+      text-align: center;
+    }
+    .price-section-title {
+      flex: 1;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--gray-800);
+    }
+    .price-section-desc {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+    }
+    .price-section-arrow {
+      color: var(--gray-400);
+      font-size: 1.25rem;
+      transition: transform 0.2s;
+    }
+    .price-section.open .price-section-arrow {
+      transform: rotate(180deg);
+    }
+    .price-section-body {
+      display: none;
+      padding: 0 16px 16px;
+    }
+    .price-section.open .price-section-body {
+      display: block;
+    }
+    /* 단가 테이블 */
+    .price-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    .price-table th {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      text-align: left;
+      padding: 8px 6px;
+      border-bottom: 1.5px solid var(--gray-200);
+    }
+    .price-table th.right {
+      text-align: right;
+    }
+    .price-table td {
+      font-size: 0.9375rem;
+      padding: 10px 6px;
+      border-bottom: 1px solid var(--gray-100);
+      color: var(--gray-700);
+      vertical-align: middle;
+    }
+    .price-table tr:last-child td {
+      border-bottom: none;
+    }
+    .price-table .name-cell {
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .price-table .unit-cell {
+      font-size: 0.8125rem;
+      color: var(--gray-500);
+      white-space: nowrap;
+    }
+    .price-table .source-cell {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+      white-space: nowrap;
+    }
+    /* 단가 입력 필드 */
+    .price-input {
+      width: 110px;
+      text-align: right;
+      padding: 8px 10px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      background: var(--gray-50);
+    }
+    .price-input:focus {
+      border-color: var(--primary);
+      outline: none;
+      background: white;
+    }
+    .price-input.small {
+      width: 80px;
+    }
+    /* 년도 선택 */
+    .year-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 14px 16px;
+      background: white;
+      border: 1.5px solid var(--primary);
+      border-radius: 14px;
+    }
+    .year-selector label {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gray-800);
+    }
+    .year-selector select {
+      padding: 8px 12px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      background: white;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23707068' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 30px;
+    }
+    .year-selector .updated {
+      margin-left: auto;
+      font-size: 0.8125rem;
+      color: var(--gray-400);
+    }
+    /* 저장 알림 */
+    .save-notice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--info-bg);
+      border-radius: 10px;
+      margin-bottom: 16px;
+      font-size: 0.875rem;
+      color: var(--info);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <div class="header">
+    <a href="#" onclick="history.back(); return false;" class="header-back" aria-label="뒤로가기">&#8249;</a>
+    <div class="header-title">기준단가 설정</div>
+    <div class="header-action"></div>
+  </div>
+
+  <!-- 페이지 콘텐츠 -->
+  <div class="page" style="padding-top: calc(var(--header-height) + 16px);">
+
+    <!-- 년도/반기 선택 -->
+    <div class="year-selector">
+      <label>적용 기준:</label>
+      <select id="sel-year" onchange="onYearChange()">
+        <option value="2026">2026년</option>
+        <option value="2025">2025년</option>
+      </select>
+      <select id="sel-half" onchange="onYearChange()">
+        <option value="상반기">상반기</option>
+        <option value="하반기">하반기</option>
+      </select>
+      <span class="updated" id="updated-date">최종 수정: 2026-01-15</span>
+    </div>
+
+    <div class="save-notice">
+      <span>&#9432;</span>
+      <span>여기서 단가를 수정하면 모든 견적서에 자동 반영됩니다</span>
+    </div>
+
+    <!-- 1. 노임단가 -->
+    <div class="price-section open" id="sec-labor">
+      <div class="price-section-header" onclick="toggleSection('sec-labor')">
+        <span class="price-section-icon">&#128119;</span>
+        <span class="price-section-title">노임단가</span>
+        <span class="price-section-desc">시중노임단가 기준</span>
+        <span class="price-section-arrow">&#9660;</span>
+      </div>
+      <div class="price-section-body">
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th>직종</th>
+              <th class="right">일당 (원)</th>
+              <th>출처</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-labor"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2. 자재단가 -->
+    <div class="price-section open" id="sec-material">
+      <div class="price-section-header" onclick="toggleSection('sec-material')">
+        <span class="price-section-icon">&#128230;</span>
+        <span class="price-section-title">자재단가</span>
+        <span class="price-section-desc">한국물가정보 기준</span>
+        <span class="price-section-arrow">&#9660;</span>
+      </div>
+      <div class="price-section-body">
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th>자재</th>
+              <th>단위</th>
+              <th class="right">단가 (원)</th>
+              <th>출처</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-material"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. 표준품셈 시공량 -->
+    <div class="price-section open" id="sec-productivity">
+      <div class="price-section-header" onclick="toggleSection('sec-productivity')">
+        <span class="price-section-icon">&#128209;</span>
+        <span class="price-section-title">표준품셈 시공량</span>
+        <span class="price-section-desc">건설공사 표준품셈 5-3-7</span>
+        <span class="price-section-arrow">&#9660;</span>
+      </div>
+      <div class="price-section-body">
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th>구분</th>
+              <th>단위</th>
+              <th class="right">값</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-productivity"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4. 기타 단가 -->
+    <div class="price-section open" id="sec-etc">
+      <div class="price-section-header" onclick="toggleSection('sec-etc')">
+        <span class="price-section-icon">&#128736;</span>
+        <span class="price-section-title">기타 단가</span>
+        <span class="price-section-desc">폐기물·약품 등</span>
+        <span class="price-section-arrow">&#9660;</span>
+      </div>
+      <div class="price-section-body">
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th>단위</th>
+              <th class="right">단가 (원)</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-etc"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 저장 버튼 -->
+    <button class="btn btn-primary btn-full btn-lg mt-20" onclick="savePrices()">
+      단가 저장
+    </button>
+
+    <div style="height:32px;"></div>
+  </div>
+
+  <script src="../common/trades/unit-prices.js"></script>
+  <script src="../common/components.js"></script>
+  <script>
+    // 기능 패널
+    LTI.renderFeaturePanel({
+      target: '.page',
+      features: [
+        { text: '년도/반기 선택 — 해당 시점 노임단가·자재단가 로드' },
+        { text: '노임단가 — 전 공종 직종 관리 (도배공·목공·설비공·타일공·도장공·마루공·미장공·전기공·방수공·보통인부)' },
+        { text: '자재단가 — 벽지·석고보드·몰딩·싱크대·배관·페인트·바닥재·타일·청소 등 전 공종 자재' },
+        { text: '표준품셈 시공량 — 도배·목공·바닥·페인트·화장실·싱크대 공종별 ㎡당/m당 기준' },
+        { text: '기타 단가 — 폐기물·약품·단열재 등' },
+        { text: '이사·숙박 단가 — 포장인부·차량·보관·숙박 시장가' },
+        { text: '직접 편집 — 모든 단가 필드를 터치하여 직접 수정 가능' },
+        { text: '단가 저장 → 확인 후 저장, 모든 공종 견적서에 자동 반영' },
+        { text: '최종 수정일 자동 표시' },
+        { text: '출처 명시 — 시중노임단가·한국물가정보·표준품셈 조항번호' },
+      ],
+    });
+
+    function fmtN(n) { return n.toLocaleString('ko-KR'); }
+    function parseN(s) { return parseFloat(s.replace(/[^0-9.]/g,'')) || 0; }
+
+    // 섹션 토글
+    function toggleSection(id) {
+      document.getElementById(id).classList.toggle('open');
+    }
+
+    // ===== 테이블 렌더링 =====
+    function renderAll() {
+      // 노임단가
+      document.getElementById('tbl-labor').innerHTML = UNIT_PRICES.labor.map((r, i) => `
+        <tr>
+          <td class="name-cell">${r.name}</td>
+          <td style="text-align:right;">
+            <input class="price-input" type="text" inputmode="numeric"
+              value="${fmtN(r.price)}" onfocus="this.select()"
+              oninput="onPriceEdit('labor',${i},this)">
+          </td>
+          <td class="source-cell">${r.source}</td>
+        </tr>
+      `).join('');
+
+      // 자재단가
+      document.getElementById('tbl-material').innerHTML = UNIT_PRICES.material.map((r, i) => `
+        <tr>
+          <td class="name-cell">${r.name}</td>
+          <td class="unit-cell">${r.unit}</td>
+          <td style="text-align:right;">
+            <input class="price-input" type="text" inputmode="numeric"
+              value="${fmtN(r.price)}" onfocus="this.select()"
+              oninput="onPriceEdit('material',${i},this)">
+          </td>
+          <td class="source-cell">${r.source}</td>
+        </tr>
+      `).join('');
+
+      // 표준품셈
+      document.getElementById('tbl-productivity').innerHTML = UNIT_PRICES.productivity.map((r, i) => `
+        <tr>
+          <td class="name-cell">${r.name}</td>
+          <td class="unit-cell">${r.unit}</td>
+          <td style="text-align:right;">
+            <input class="price-input small" type="text" inputmode="decimal"
+              value="${r.value}" onfocus="this.select()"
+              oninput="onValueEdit('productivity',${i},this)">
+          </td>
+          <td class="source-cell">${r.note}</td>
+        </tr>
+      `).join('');
+
+      // 기타
+      document.getElementById('tbl-etc').innerHTML = UNIT_PRICES.etc.map((r, i) => `
+        <tr>
+          <td class="name-cell">${r.name}</td>
+          <td class="unit-cell">${r.unit}</td>
+          <td style="text-align:right;">
+            <input class="price-input" type="text" inputmode="numeric"
+              value="${fmtN(r.price)}" onfocus="this.select()"
+              oninput="onPriceEdit('etc',${i},this)">
+          </td>
+          <td class="source-cell">${r.note}</td>
+        </tr>
+      `).join('');
+
+      // 수정일 표시
+      document.getElementById('updated-date').textContent = '최종 수정: ' + UNIT_PRICES.updated;
+    }
+
+    // ===== 단가 수정 이벤트 =====
+    function onPriceEdit(section, idx, el) {
+      const val = parseN(el.value);
+      UNIT_PRICES[section][idx].price = val;
+      if (val > 0) el.value = fmtN(val);
+    }
+
+    function onValueEdit(section, idx, el) {
+      const val = parseFloat(el.value) || 0;
+      UNIT_PRICES[section][idx].value = val;
+    }
+
+    // 년도 변경 (목업 — 실제로는 서버에서 로드)
+    function onYearChange() {
+      const year = document.getElementById('sel-year').value;
+      const half = document.getElementById('sel-half').value;
+      UNIT_PRICES.year = year;
+      UNIT_PRICES.half = half;
+      LTI.toast(year + '년 ' + half + ' 단가 로드됨');
+    }
+
+    // 저장
+    function savePrices() {
+      UNIT_PRICES.updated = new Date().toISOString().slice(0, 10);
+      LTI.confirm({
+        title: '단가 저장',
+        message: UNIT_PRICES.year + '년 ' + UNIT_PRICES.half + ' 기준단가를 저장하시겠습니까?<br><br>저장하면 모든 견적서에 자동 반영됩니다.',
+        confirmText: '저장',
+        cancelText: '취소',
+        onConfirm: function() {
+          document.getElementById('updated-date').textContent = '최종 수정: ' + UNIT_PRICES.updated;
+          LTI.toast('기준단가가 저장되었습니다');
+        }
+      });
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>

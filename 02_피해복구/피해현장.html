@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — 피해현장</title>
+  <link rel="stylesheet" href="../common/style.css">
+  <link rel="stylesheet" href="../common/tab-bar.css">
+  <style>
+    /* --- 주소 검색 모달 --- */
+    .address-modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .address-modal-content {
+      background: white;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 1024px;
+      max-height: 85vh;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    .address-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .address-modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .address-modal-close {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: var(--gray-100); border-radius: 50%;
+      cursor: pointer; font-size: 1.25rem; color: var(--gray-600);
+    }
+
+    /* --- 전화번호 입력 모달 --- */
+    .phone-modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .phone-modal-content {
+      background: white;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 420px;
+      padding: 28px;
+    }
+
+    /* --- 위임장 서명 모달 --- */
+    .sign-modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+    .sign-modal-content {
+      background: white;
+      width: 100%;
+      max-width: 1024px;
+      height: 100%;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sign-canvas-area {
+      width: 100%;
+      height: 140px;
+      border: 2px dashed var(--gray-300);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 8px 0;
+      flex-shrink: 0;
+      background: var(--gray-50);
+      cursor: crosshair;
+      position: relative;
+    }
+    .sign-canvas-area.signed {
+      border-color: var(--success);
+      border-style: solid;
+      background: white;
+    }
+    .sign-canvas-placeholder {
+      color: var(--gray-400);
+      font-size: 1rem;
+    }
+    .sign-canvas-area.signed .sign-canvas-placeholder {
+      display: none;
+    }
+    .sign-drawn {
+      display: none;
+      font-family: "Nanum Pen Script", cursive, serif;
+      font-size: 3rem;
+      color: #1a1a1a;
+    }
+    .sign-canvas-area.signed .sign-drawn {
+      display: block;
+    }
+
+    /* --- 신분증 등록 모달 --- */
+    .id-card-preview {
+      width: 100%;
+      height: 220px;
+      background: var(--gray-100);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      border: 2px dashed var(--gray-300);
+      margin: 16px 0;
+    }
+    .id-card-preview.captured {
+      border-style: solid;
+      border-color: var(--success);
+      background: white;
+      position: relative;
+    }
+    .id-card-img {
+      width: 90%;
+      height: 180px;
+      background: linear-gradient(135deg, #e8e8e0 0%, #d0d0c8 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9375rem;
+      color: var(--gray-500);
+    }
+    .masking-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--success);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <div class="header">
+    <a href="../01_현장상세.html" class="header-back" aria-label="뒤로가기">&#8249;</a>
+    <div class="header-title">아랫집 피해복구</div>
+    <div class="header-action"></div>
+  </div>
+
+  <!-- 탭 바 -->
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="sub-tab-bar" id="sub-tab-bar"></div>
+
+  <!-- 페이지 콘텐츠 -->
+  <div class="page-tab">
+
+    <!-- 피해자 기본 정보 (인라인 오픈) -->
+    <div class="card" style="padding:16px 20px; margin-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span style="font-size:1.0625rem; font-weight:600; color:var(--gray-800);">피해자 정보</span>
+      </div>
+
+      <!-- 1차 주소 (윗집 자동) -->
+      <div style="background:var(--gray-100); border-radius:8px; padding:12px 16px; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+          <span style="font-size:0.75rem; color:var(--gray-500);">윗집 주소 (자동 연결)</span>
+          <button onclick="editPrimaryAddress()" style="font-size:0.75rem; color:var(--primary); background:none; border:1px solid var(--primary); border-radius:6px; padding:2px 8px; cursor:pointer;">수정</button>
+        </div>
+        <div style="font-size:1.0625rem; font-weight:600; color:var(--gray-700);" id="primary-address">서울특별시 강남구 테헤란로 123 래미안아파트</div>
+      </div>
+
+      <!-- 2차 주소 (동/호수) -->
+      <div class="form-group">
+        <label class="form-label">아랫집 동/호수 <span class="required">*</span></label>
+        <input class="form-input" type="text" id="address-detail-input" placeholder="예: 102동 1201호" oninput="checkAddressInput()">
+      </div>
+
+      <!-- 전화번호 -->
+      <div class="form-group">
+        <label class="form-label">전화번호 <span class="required">*</span></label>
+        <div style="font-size:0.8125rem; color:var(--gray-500); margin-bottom:6px;">피해 세대 구성원 중 성인</div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input class="form-input" type="tel" id="phone-1" value="010" maxlength="3"
+            style="flex:1; text-align:center; letter-spacing:2px;"
+            oninput="if(this.value.length>=3){document.getElementById('phone-2').focus();}">
+          <span style="font-size:1.25rem; color:var(--gray-400);">-</span>
+          <input class="form-input" type="tel" id="phone-2" maxlength="4" placeholder="0000"
+            style="flex:1.3; text-align:center; letter-spacing:2px;"
+            oninput="if(this.value.length>=4){document.getElementById('phone-3').focus();}">
+          <span style="font-size:1.25rem; color:var(--gray-400);">-</span>
+          <input class="form-input" type="tel" id="phone-3" maxlength="4" placeholder="0000"
+            style="flex:1.3; text-align:center; letter-spacing:2px;">
+        </div>
+      </div>
+
+      <!-- 성명 -->
+      <div class="form-group">
+        <label class="form-label">성명 <span class="required">*</span></label>
+        <div style="font-size:0.8125rem; color:var(--gray-500); margin-bottom:6px;">대면 시 신분증 확인 후 직접 입력</div>
+        <input class="form-input" type="text" id="name-input" placeholder="홍길동">
+      </div>
+
+      <!-- 세대주 관계 -->
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">세대주와의 관계 <span class="required">*</span></label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;" id="relation-btns">
+          <button class="btn btn-sm btn-secondary relation-btn" onclick="selectRelation(this, '본인')">본인 (세대주)</button>
+          <button class="btn btn-sm btn-secondary relation-btn" onclick="selectRelation(this, '배우자')">배우자</button>
+          <button class="btn btn-sm btn-secondary relation-btn" onclick="selectRelation(this, '자녀')">자녀</button>
+          <button class="btn btn-sm btn-secondary relation-btn" onclick="selectRelation(this, '부모')">부모</button>
+          <button class="btn btn-sm btn-secondary relation-btn" onclick="selectRelation(this, '기타')">기타</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 위임장 1: 공사 위임장 -->
+    <div class="status-row" id="row-sign1" onclick="openSignModal(1)">
+      <div class="status-icon pending" id="icon-sign1">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <div class="status-body">
+        <div class="status-title">공사 위임장</div>
+        <div class="status-value" id="val-sign1">터치하여 서명을 받으세요</div>
+      </div>
+      <span class="status-badge pending" id="badge-sign1">미서명</span>
+    </div>
+
+    <!-- 위임장 2: 보험금 직접 청구 및 수령 동의서 -->
+    <div class="status-row" id="row-sign2" onclick="openSignModal(2)">
+      <div class="status-icon pending" id="icon-sign2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="status-body">
+        <div class="status-title">보험금 직접 청구 및 수령 동의서</div>
+        <div class="status-value" id="val-sign2">터치하여 서명을 받으세요</div>
+      </div>
+      <span class="status-badge pending" id="badge-sign2">미서명</span>
+    </div>
+
+    <!-- 견적서 확인 및 동의 (견적 완성 전 잠금) -->
+    <div class="status-row" id="row-estimate-agree" onclick="handleEstimateAgree()" style="opacity:0.5;">
+      <div class="status-icon pending" id="icon-estimate-agree">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
+      </div>
+      <div class="status-body">
+        <div class="status-title">견적서 확인 및 동의</div>
+        <div class="status-value" id="val-estimate-agree">견적서 작성 후 고객 서명 가능</div>
+      </div>
+      <span class="status-badge pending" id="badge-estimate-agree">견적 미작성</span>
+    </div>
+
+    <!-- 신분증 등록 -->
+    <div class="status-row" id="row-idcard" onclick="openIdCardModal()">
+      <div class="status-icon pending" id="icon-idcard">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><path d="M14 10h4"/><path d="M14 14h2"/></svg>
+      </div>
+      <div class="status-body">
+        <div class="status-title">신분증 등록</div>
+        <div class="status-value" id="val-idcard">터치하여 신분증을 등록하세요</div>
+      </div>
+      <span class="status-badge pending" id="badge-idcard">미등록</span>
+    </div>
+
+    <!-- 공사 완료 확인서 (공사 완료 후 서명) -->
+    <div class="status-row" id="row-completion" onclick="handleCompletion()" style="opacity:0.5;">
+      <div class="status-icon pending" id="icon-completion">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <div class="status-body">
+        <div class="status-title">공사 완료 확인서</div>
+        <div class="status-value" id="val-completion">공사 완료 후 고객 서명 가능</div>
+      </div>
+      <span class="status-badge pending" id="badge-completion">공사 전</span>
+    </div>
+
+  </div>
+
+  <!-- 전화번호/성명/관계 모달 제거 — 인라인 입력으로 변경 -->
+
+  <!-- ===== 모달: 위임장 서명 (전문 포함) ===== -->
+  <div class="sign-modal" id="modal-sign" style="display:none;">
+    <div class="sign-modal-content">
+      <div class="address-modal-header">
+        <span class="address-modal-title" id="sign-modal-title">위임장 서명</span>
+        <button class="address-modal-close" onclick="closeSignModal()">&times;</button>
+      </div>
+
+      <!-- 위임장 전문 (스크롤 없이 한 화면) -->
+      <div id="sign-doc-body" style="flex:1; border:1px solid var(--gray-200); border-radius:10px; padding:14px; margin-bottom:10px; background:var(--gray-50); font-size:0.8125rem; line-height:1.5; color:var(--gray-700); overflow-y:auto;"></div>
+
+      <!-- 서명 영역 -->
+      <p style="font-size:0.875rem; color:var(--gray-600); margin-bottom:6px; font-weight:600;">위 내용을 확인하고 아래에 서명해주세요</p>
+      <div class="sign-canvas-area" id="sign-canvas" onclick="doSign()">
+        <span class="sign-canvas-placeholder">여기에 서명</span>
+        <span class="sign-drawn" id="sign-name"></span>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-secondary" style="flex:1;" onclick="clearSign()">다시 서명</button>
+        <button class="btn btn-primary" style="flex:1;" id="sign-confirm-btn" onclick="confirmSign()" disabled>서명 완료</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 모달: 신분증 등록 ===== -->
+  <div class="sign-modal" id="modal-idcard" style="display:none;">
+    <div class="sign-modal-content">
+      <div class="address-modal-header">
+        <span class="address-modal-title">신분증 등록</span>
+        <button class="address-modal-close" onclick="closeIdCardModal()">&times;</button>
+      </div>
+
+      <!-- 개인정보처리방침 동의 -->
+      <div class="check-item" style="background:var(--gray-50); border-radius:10px; padding:14px 16px; margin-bottom:16px;">
+        <input type="checkbox" id="privacy-agree" onchange="updateIdCardBtn()">
+        <label for="privacy-agree" style="font-size:1rem;">
+          <strong>개인정보처리방침</strong>에 동의합니다
+          <div style="font-size:0.8125rem; color:var(--gray-500); margin-top:4px;">신분증 정보는 보험 청구 목적으로만 사용되며, 청구 완료 후 즉시 삭제됩니다.</div>
+        </label>
+      </div>
+
+      <!-- 신분증 촬영 -->
+      <div class="id-card-preview" id="idcard-preview">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span style="font-size:0.9375rem; color:var(--gray-400);">터치하여 신분증 앞면을 촬영하세요</span>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="idcard-capture-btn" onclick="captureIdCard()" disabled>촬영하기</button>
+      <button class="btn btn-success btn-full mt-12" id="idcard-confirm-btn" onclick="confirmIdCard()" style="display:none;">등록 완료</button>
+    </div>
+  </div>
+
+  <script src="../common/components.js"></script>
+  <script src="../common/tab-bar.js"></script>
+  <script>
+    // 탭 바 렌더링
+    renderTabBar('scene', null);
+
+    // 기능 패널
+    LTI.renderFeaturePanel({
+      target: '.page-tab',
+      features: [
+        { text: '피해자 정보 카드 — 주소/전화번호/성명/세대주관계를 한 화면에서 바로 입력' },
+        { text: '주소 — 1차 주소는 윗집에서 자동 연결, 수정 버튼으로 변경 가능. 동/호수만 입력' },
+        { text: '전화번호 — 피해 세대 구성원 중 성인. 3칸 분리(010 기본), 4자리 시 자동 이동' },
+        { text: '성명 — 대면 시 신분증 확인 후 직접 입력 (OCR 자동 채움 안 함)' },
+        { text: '세대주 관계 — 본인/배우자/자녀/부모/기타 버튼 선택 (터치 한 번)' },
+        { text: '공사 위임장 — 전문을 태블릿 세로 한 화면에 표시 (스크롤 없음) → 하단 서명' },
+        { text: '보험금 직접 청구 및 수령 동의서 — 전문을 태블릿 세로 한 화면에 표시 (스크롤 없음) → 하단 서명' },
+        { text: '위임장/동의서 — 위임인 정보는 위 입력값 자동 채움, 수임인 정보는 내정보에서 자동' },
+        { text: '서명 완료 시 — 메인 화면에 "서명완료" 상태가 즉시 표시됨 (모달 닫히면 바로 반영)' },
+        { text: '견적서 확인 및 동의 — 견적 탭에서 작성 완료 후 잠금 해제 → 전문 표시 (스크롤 없음) → 고객 전자서명' },
+        { text: '신분증 등록 — 개인정보처리방침 동의 → 촬영 → 주민번호 뒷자리 자동 마스킹' },
+        { text: '⚠️ 신분증 정보는 보험청구 발송 완료 후 서버에서 즉시 삭제 (개인정보 보호)' },
+        { text: '공사 완료 확인서 — 공사 완료 후 잠금 해제 → 전문 표시 (스크롤 없음) → 고객 전자서명 (하자 종결)' },
+        { text: '잠금 해제 조건 — 견적서: 견적 탭 완료 시 / 완료확인서: 공사 상태 "완료" 변경 시 자동 해제' },
+      ],
+    });
+
+    // ===== 상태 관리 =====
+    const state = {
+      address: null,
+      addressDetail: null,
+      phone: null,
+      sign1: false,
+      sign2: false,
+      estimateAgree: false,
+      idcard: false,
+    };
+
+    let estimateReady = false;
+
+    function updateRow(key, iconId, valId, badgeId, rowId, doneText, doneValue) {
+      const icon = document.getElementById(iconId);
+      const val = document.getElementById(valId);
+      const badge = document.getElementById(badgeId);
+      const row = document.getElementById(rowId);
+
+      if (state[key]) {
+        icon.className = 'status-icon done';
+        icon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>';
+        val.textContent = doneValue;
+        badge.className = 'status-badge done';
+        badge.textContent = doneText;
+        row.classList.add('completed');
+      }
+    }
+
+    // ===== 세대주 관계 (인라인 버튼) =====
+    function selectRelation(btn, relation) {
+      state.relation = relation;
+      document.querySelectorAll('.relation-btn').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-secondary');
+        b.style.color = '';
+      });
+      btn.classList.remove('btn-secondary');
+      btn.classList.add('btn-primary');
+      LTI.toast('세대주 관계: ' + relation);
+    }
+
+    // ===== 주소 (인라인 입력) =====
+    function editPrimaryAddress() {
+      const current = document.getElementById('primary-address').textContent;
+      const el = document.getElementById('primary-address');
+      el.innerHTML = `<input class="form-input" type="text" id="primary-addr-input" value="${current}" style="font-size:1rem; padding:8px 12px; margin-top:4px;" onkeydown="if(event.key==='Enter'){savePrimaryAddress();}">
+        <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end;">
+          <button class="btn btn-sm btn-secondary" onclick="cancelPrimaryAddress('${current}')">취소</button>
+          <button class="btn btn-sm btn-primary" onclick="savePrimaryAddress()">저장</button>
+        </div>`;
+      document.getElementById('primary-addr-input').focus();
+    }
+    function savePrimaryAddress() {
+      const val = document.getElementById('primary-addr-input').value.trim();
+      if (!val) { LTI.toast('주소를 입력하세요'); return; }
+      document.getElementById('primary-address').textContent = val;
+      LTI.toast('1차 주소가 수정되었습니다');
+    }
+    function cancelPrimaryAddress(original) {
+      document.getElementById('primary-address').textContent = original;
+    }
+
+    function checkAddressInput() {
+      const val = document.getElementById('address-detail-input').value.trim();
+      state.address = val ? true : false;
+      state.addressDetail = val;
+    }
+
+    // ===== 견적서 확인 및 동의 =====
+    function handleEstimateAgree() {
+      if (!estimateReady) {
+        LTI.toast('견적서를 먼저 작성해주세요 (견적 탭)');
+        return;
+      }
+      openSignModal(3);
+    }
+
+    function unlockEstimateAgree() {
+      estimateReady = true;
+      const row = document.getElementById('row-estimate-agree');
+      row.style.opacity = '1';
+      document.getElementById('val-estimate-agree').textContent = '터치하여 고객 서명을 받으세요';
+      document.getElementById('badge-estimate-agree').textContent = '미서명';
+    }
+
+    // ===== 전화번호 모달 =====
+    // 전화번호/성명은 인라인 입력이므로 모달 불필요
+
+    // ===== 위임장 서명 모달 =====
+    let currentSignType = 0;
+    // 피해자 정보 자동 채움용
+    function getVictimName() { return document.getElementById('name-input').value.trim() || '(미입력)'; }
+    function getVictimPhone() {
+      const p1 = document.getElementById('phone-1').value;
+      const p2 = document.getElementById('phone-2').value;
+      const p3 = document.getElementById('phone-3').value;
+      return p1 + '-' + (p2||'____') + '-' + (p3||'____');
+    }
+    function getVictimAddr() {
+      const primary = document.getElementById('primary-address').textContent;
+      const detail = document.getElementById('address-detail-input').value.trim();
+      return primary + ' ' + (detail || '(동/호수 미입력)');
+    }
+    function getRelation() { return state.relation || '(미선택)'; }
+
+    const SIGN_DOCS = {
+      1: {
+        title: '공사 위임장',
+        body: function() {
+          return `
+            <div style="text-align:center; font-size:1.125rem; font-weight:700; margin-bottom:16px; color:#1a1a1a;">공 사 위 임 장</div>
+            <table style="width:100%; border-collapse:collapse; font-size:0.875rem; margin-bottom:14px;">
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600; width:30%;">위임인 (피해자)</td><td style="border:1px solid #d0d0c8; padding:8px;">${getVictimName()}</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">연락처</td><td style="border:1px solid #d0d0c8; padding:8px;">${getVictimPhone()}</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">세대주 관계</td><td style="border:1px solid #d0d0c8; padding:8px;">${getRelation()}</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">피해 주소</td><td style="border:1px solid #d0d0c8; padding:8px;">${getVictimAddr()}</td></tr>
+            </table>
+            <table style="width:100%; border-collapse:collapse; font-size:0.875rem; margin-bottom:14px;">
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600; width:30%;">수임인 (시공업체)</td><td style="border:1px solid #d0d0c8; padding:8px;">리크튜브 ○○지사</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">대표자</td><td style="border:1px solid #d0d0c8; padding:8px;">김 대 표</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">연락처</td><td style="border:1px solid #d0d0c8; padding:8px;">010-1234-5678</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">사업자등록번호</td><td style="border:1px solid #d0d0c8; padding:8px;">123-45-67890</td></tr>
+            </table>
+            <p>본인(위임인)은 아래 기재된 누수 피해 현장의 <strong>원상복구 공사 일체</strong>에 관한 권한을 상기 수임인에게 위임하며, 다음 사항에 동의합니다.</p>
+            <ol style="padding-left:20px; margin:12px 0;">
+              <li style="padding:4px 0;">수임인은 위임인의 피해 현장에 대해 원상복구 공사를 성실히 수행한다.</li>
+              <li style="padding:4px 0;">공사 범위는 별첨 견적서에 명시된 항목에 한하며, 추가 공사 발생 시 위임인의 사전 동의를 받는다.</li>
+              <li style="padding:4px 0;">수임인은 공사 전·중·후 과정을 사진 또는 영상으로 기록하여 위임인에게 제공한다.</li>
+              <li style="padding:4px 0;">공사에 사용되는 자재는 기존 시공 자재와 동일하거나 동등 이상의 등급을 사용한다.</li>
+              <li style="padding:4px 0;">자재 단종 등 불가피한 사유로 대체 자재를 사용할 경우, 위임인에게 사전 고지하고 동의를 받는다.</li>
+              <li style="padding:4px 0;">수임인은 공사 완료 후 하자 보증 기간(1년)을 제공하며, 하자 발생 시 무상으로 보수한다.</li>
+              <li style="padding:4px 0;">본 위임장은 해당 현장의 공사 완료 및 보험금 정산이 완료될 때까지 유효하다.</li>
+            </ol>
+            <div style="background:#f5f5f0; border:1px solid #d0d0c8; border-radius:4px; padding:8px 12px; font-size:0.8125rem; color:#707068; margin-top:12px;">
+              본 위임장은 「민법」 제680조에 근거한 적법한 위임 계약서이며, 전자서명법에 의한 전자서명이 포함되어 법적 효력을 가집니다.
+            </div>
+          `;
+        },
+      },
+      2: {
+        title: '보험금(손해배상금) 직접 청구 및 수령 동의서',
+        body: function() {
+          return `
+            <div style="text-align:center; font-size:1.125rem; font-weight:700; margin-bottom:16px; color:#1a1a1a;">보험금(손해배상금)<br>직접 청구 및 수령 동의서</div>
+            <table style="width:100%; border-collapse:collapse; font-size:0.875rem; margin-bottom:14px;">
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600; width:30%;">피해자 (동의인)</td><td style="border:1px solid #d0d0c8; padding:8px;">${getVictimName()}</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">연락처</td><td style="border:1px solid #d0d0c8; padding:8px;">${getVictimPhone()}</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">세대주 관계</td><td style="border:1px solid #d0d0c8; padding:8px;">${getRelation()}</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">피해 주소</td><td style="border:1px solid #d0d0c8; padding:8px;">${getVictimAddr()}</td></tr>
+            </table>
+            <table style="width:100%; border-collapse:collapse; font-size:0.875rem; margin-bottom:14px;">
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600; width:30%;">수임 업체</td><td style="border:1px solid #d0d0c8; padding:8px;">리크튜브 ○○지사</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">대표자</td><td style="border:1px solid #d0d0c8; padding:8px;">김 대 표</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">연락처</td><td style="border:1px solid #d0d0c8; padding:8px;">010-1234-5678</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">입금 계좌</td><td style="border:1px solid #d0d0c8; padding:8px;">○○은행 123-456-789012</td></tr>
+            </table>
+            <p>본인(피해자)은 상기 누수 사고로 인한 피해 복구와 관련하여, 아래 사항에 동의합니다.</p>
+            <ol style="padding-left:20px; margin:12px 0;">
+              <li style="padding:4px 0;">본인은 누수 피해 복구 공사를 상기 수임 업체에 위임하였으며, 공사 대금에 해당하는 <strong>보험금(손해배상금)을 수임 업체 계좌로 직접 지급(직불)</strong>하는 것에 동의합니다.</li>
+              <li style="padding:4px 0;">보험금의 청구 및 수령에 관한 일체의 권한을 수임 업체에 위임합니다.</li>
+              <li style="padding:4px 0;">수임 업체는 보험금 수령 후 본인에게 공사비 정산 내역을 제공합니다.</li>
+              <li style="padding:4px 0;">공사비가 보험금을 초과하는 경우, 초과 금액은 본인이 별도로 정산합니다.</li>
+              <li style="padding:4px 0;">보험금이 공사비를 초과하는 경우, 잔액은 본인에게 반환합니다.</li>
+              <li style="padding:4px 0;">본 동의서는 해당 사고의 보험금 정산이 완료될 때까지 유효합니다.</li>
+            </ol>
+            <div style="background:#fdf6e8; border:1.5px solid #c8871e; border-radius:6px; padding:10px 14px; margin:12px 0; font-size:0.8125rem; color:#505048;">
+              <strong style="color:#a06c15;">확인 사항</strong><br>
+              ☑ 본인은 위 내용을 충분히 이해하였으며, 자발적으로 동의합니다.<br>
+              ☑ 본인은 보험금이 수임 업체 계좌로 직접 입금되는 것에 동의합니다.<br>
+              ☑ 본인은 공사 완료 후 공사 완료 확인서에 서명할 것을 약속합니다.
+            </div>
+            <div style="background:#f5f5f0; border:1px solid #d0d0c8; border-radius:4px; padding:8px 12px; font-size:0.8125rem; color:#707068; margin-top:12px;">
+              본 동의서는 「보험업법」 및 「민법」에 근거한 적법한 채권 위임 동의서이며, 전자서명법에 의한 전자서명이 포함되어 법적 효력을 가집니다. 신분증 사본은 본 동의서의 진정성 확인 목적으로만 사용되며, 보험금 정산 완료 후 즉시 폐기됩니다.
+            </div>
+          `;
+        },
+      },
+      3: {
+        title: '견적서 확인 및 동의',
+        body: function() {
+          return `
+            <div style="text-align:center; font-size:1.125rem; font-weight:700; margin-bottom:16px; color:#1a1a1a;">견적서 확인 및 동의</div>
+            <table style="width:100%; border-collapse:collapse; font-size:0.875rem; margin-bottom:14px;">
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600; width:30%;">확인인</td><td style="border:1px solid #d0d0c8; padding:8px;">${getVictimName()}</td></tr>
+              <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">피해 주소</td><td style="border:1px solid #d0d0c8; padding:8px;">${getVictimAddr()}</td></tr>
+            </table>
+            <p>본인은 위 견적서의 공사 항목 및 금액을 확인하였으며, 해당 내용에 따른 원상복구 공사 진행에 동의합니다.</p>
+            <ol style="padding-left:20px; margin:12px 0;">
+              <li style="padding:4px 0;">견적서에 명시된 공사 항목과 금액을 확인하였습니다.</li>
+              <li style="padding:4px 0;">해당 견적 내용에 따라 원상복구 공사를 진행하는 것에 동의합니다.</li>
+              <li style="padding:4px 0;">추가 공사 발생 시 별도 협의하여 진행합니다.</li>
+            </ol>
+          `;
+        },
+      },
+    };
+
+    function openSignModal(type) {
+      currentSignType = type;
+      const doc = SIGN_DOCS[type];
+      document.getElementById('sign-modal-title').textContent = doc.title;
+      document.getElementById('sign-doc-body').innerHTML = doc.body();
+      document.getElementById('sign-canvas').classList.remove('signed');
+      document.getElementById('sign-confirm-btn').disabled = true;
+      document.getElementById('sign-name').textContent = '';
+      document.getElementById('modal-sign').style.display = 'flex';
+    }
+    function closeSignModal() {
+      document.getElementById('modal-sign').style.display = 'none';
+    }
+    function doSign() {
+      const canvas = document.getElementById('sign-canvas');
+      canvas.classList.add('signed');
+      document.getElementById('sign-name').textContent = '홍 길 동';
+      document.getElementById('sign-confirm-btn').disabled = false;
+    }
+    function clearSign() {
+      const canvas = document.getElementById('sign-canvas');
+      canvas.classList.remove('signed');
+      document.getElementById('sign-name').textContent = '';
+      document.getElementById('sign-confirm-btn').disabled = true;
+    }
+    function confirmSign() {
+      const doc = SIGN_DOCS[currentSignType];
+      if (currentSignType === 3) {
+        state.estimateAgree = true;
+        updateRow('estimateAgree', 'icon-estimate-agree', 'val-estimate-agree', 'badge-estimate-agree', 'row-estimate-agree', '서명완료', '견적서 확인 및 동의 — 서명 완료');
+      } else {
+        const key = 'sign' + currentSignType;
+        state[key] = true;
+        const iconId = 'icon-sign' + currentSignType;
+        const valId = 'val-sign' + currentSignType;
+        const badgeId = 'badge-sign' + currentSignType;
+        const rowId = 'row-sign' + currentSignType;
+        updateRow(key, iconId, valId, badgeId, rowId, '서명완료', doc.title + ' — 서명 완료');
+      }
+      closeSignModal();
+      LTI.toast(doc.title + ' 서명이 완료되었습니다');
+    }
+
+    // ===== 신분증 모달 =====
+    let idCaptured = false;
+    function openIdCardModal() {
+      document.getElementById('modal-idcard').style.display = 'flex';
+      document.getElementById('privacy-agree').checked = false;
+      document.getElementById('idcard-capture-btn').disabled = true;
+      document.getElementById('idcard-capture-btn').style.display = '';
+      document.getElementById('idcard-confirm-btn').style.display = 'none';
+      idCaptured = false;
+      resetIdPreview();
+    }
+    function closeIdCardModal() {
+      document.getElementById('modal-idcard').style.display = 'none';
+    }
+    function updateIdCardBtn() {
+      const agreed = document.getElementById('privacy-agree').checked;
+      document.getElementById('idcard-capture-btn').disabled = !agreed;
+    }
+    function resetIdPreview() {
+      const preview = document.getElementById('idcard-preview');
+      preview.classList.remove('captured');
+      preview.innerHTML = `
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span style="font-size:0.9375rem; color:var(--gray-400);">터치하여 신분증 앞면을 촬영하세요</span>
+      `;
+    }
+    function captureIdCard() {
+      const preview = document.getElementById('idcard-preview');
+      preview.classList.add('captured');
+      preview.innerHTML = `
+        <div class="masking-badge">자동 마스킹 완료</div>
+        <div class="id-card-img">
+          <div style="text-align:center; line-height:1.8;">
+            <div style="font-weight:700; font-size:1.125rem; color:var(--gray-700);">주민등록증</div>
+            <div style="color:var(--gray-600);">홍 길 동</div>
+            <div style="color:var(--gray-600);">900101 - <span style="background:var(--gray-800); color:var(--gray-800); border-radius:3px; padding:0 8px;">*******</span></div>
+            <div style="font-size:0.75rem; color:var(--gray-400); margin-top:4px;">뒷자리 자동 마스킹됨</div>
+          </div>
+        </div>
+      `;
+      idCaptured = true;
+      document.getElementById('idcard-capture-btn').style.display = 'none';
+      document.getElementById('idcard-confirm-btn').style.display = '';
+      LTI.toast('주민번호 뒷자리가 자동 마스킹되었습니다');
+    }
+    function confirmIdCard() {
+      state.idcard = true;
+      updateRow('idcard', 'icon-idcard', 'val-idcard', 'badge-idcard', 'row-idcard', '등록완료', '신분증 등록 완료 (마스킹 적용)');
+      closeIdCardModal();
+      LTI.toast('신분증이 등록되었습니다');
+    }
+
+    // ===== 공사 완료 확인서 =====
+    let completionReady = false;
+
+    function unlockCompletion() {
+      completionReady = true;
+      const row = document.getElementById('row-completion');
+      row.style.opacity = '1';
+      document.getElementById('val-completion').textContent = '터치하여 고객 서명을 받으세요';
+      document.getElementById('badge-completion').textContent = '미서명';
+    }
+
+    function handleCompletion() {
+      if (!completionReady) {
+        LTI.toast('공사 완료 후 서명을 받을 수 있습니다');
+        return;
+      }
+      openSignModal(4);
+    }
+
+    // 서명 타입 4 추가
+    SIGN_DOCS[4] = {
+      title: '공사 완료 확인서',
+      body: function() {
+        return `
+          <div style="text-align:center; font-size:1.125rem; font-weight:700; margin-bottom:16px; color:#1a1a1a;">공사 완료 확인서</div>
+          <table style="width:100%; border-collapse:collapse; font-size:0.875rem; margin-bottom:14px;">
+            <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600; width:30%;">확인인 (피해자)</td><td style="border:1px solid #d0d0c8; padding:8px;">${getVictimName()}</td></tr>
+            <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">피해 주소</td><td style="border:1px solid #d0d0c8; padding:8px;">${getVictimAddr()}</td></tr>
+            <tr><td style="border:1px solid #d0d0c8; padding:8px; background:#f5f5f0; font-weight:600;">시공업체</td><td style="border:1px solid #d0d0c8; padding:8px;">리크튜브 ○○지사 (대표 김 대 표)</td></tr>
+          </table>
+          <p>본인(피해자)은 상기 공사 현장의 누수 피해 원상복구 공사가 <strong>사전에 협의된 견적서 내용대로 완벽하게 완료</strong>되었음을 확인하며, 아래 사항에 동의합니다.</p>
+          <ol style="padding-left:20px; margin:12px 0;">
+            <li style="padding:4px 0;">공사 결과물을 최종 검수하였으며, 공사 품질에 <strong>만족하여 이의를 제기하지 않습니다.</strong></li>
+            <li style="padding:4px 0;">시공업체가 보험사에 공사 대금을 청구하는 것에 동의합니다.</li>
+            <li style="padding:4px 0;">공사 완료일로부터 <strong>1년간 하자 보증</strong>이 제공됨을 확인하였습니다.</li>
+            <li style="padding:4px 0;">하자 보증 기간 내 하자 발생 시 시공업체가 무상으로 보수합니다.</li>
+            <li style="padding:4px 0;">본 확인서 서명으로 해당 공사에 대한 <strong>하자 종결</strong>을 확인합니다.</li>
+          </ol>
+          <div style="background:#f5f5f0; border:1px solid #d0d0c8; border-radius:4px; padding:8px 12px; font-size:0.8125rem; color:#707068; margin-top:12px;">
+            본 공사 완료 확인서는 보험금 청구를 위한 필수 서류이며, 전자서명법에 의한 전자서명이 포함되어 법적 효력을 가집니다.
+          </div>
+        `;
+      },
+    };
+
+    // confirmSign 확장 — 기존 함수 덮어쓰기
+    const origConfirmSign = confirmSign;
+    confirmSign = function() {
+      if (currentSignType === 4) {
+        state.completion = true;
+        updateRow('completion', 'icon-completion', 'val-completion', 'badge-completion', 'row-completion', '서명완료', '공사 완료 확인서 — 고객 서명 완료');
+        closeSignModal();
+        LTI.toast('공사 완료 확인서 서명이 완료되었습니다.\n보험처리 → 완료확인서에서 서류를 확인하세요.');
+        return;
+      }
+      origConfirmSign();
+    };
+
+    // 데모용: 완료확인서 잠금 해제 버튼
+    (function() {
+      const toggle = document.createElement('div');
+      toggle.style.cssText = 'position:fixed; bottom:24px; right:20px; z-index:300;';
+      toggle.innerHTML = '<button id="demo-unlock" style="background:var(--gray-700);color:white;padding:10px 14px;border-radius:10px;border:none;font-size:0.8125rem;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);">데모: 공사완료 해제</button>';
+      document.body.appendChild(toggle);
+      document.getElementById('demo-unlock').addEventListener('click', function() {
+        unlockCompletion();
+        LTI.toast('공사 완료 확인서 잠금이 해제되었습니다');
+        this.textContent = '해제됨';
+        this.disabled = true;
+      });
+    })();
+  </script>
+</body>
+</html>

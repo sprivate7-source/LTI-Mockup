@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI — 전체 견적서 (인쇄용)</title>
+  <link rel="stylesheet" href="../common/style.css">
+  <style>
+    body { background: white; }
+    .doc { max-width: 800px; margin: 0 auto; padding: 24px; }
+
+    /* 페이지 구분 */
+    .page-section {
+      page-break-before: always;
+      padding-top: 20px;
+    }
+    .page-section:first-child {
+      page-break-before: auto;
+    }
+
+    /* 견적서 표지 */
+    .est-title { text-align:center; font-size:1.75rem; font-weight:700; letter-spacing:8px; padding-bottom:16px; border-bottom:3px double var(--gray-800); margin-bottom:20px; }
+    .est-info-table { width:100%; margin-bottom:20px; }
+    .est-info-table td { padding:6px 8px; font-size:0.9375rem; }
+    .est-info-label { font-weight:600; color:var(--gray-600); width:80px; }
+    .est-info-value { color:var(--gray-800); font-weight:600; }
+    .est-total-box { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:var(--primary-bg); border:2px solid var(--primary); margin-bottom:24px; }
+    .est-total-label { font-size:1.25rem; font-weight:700; }
+    .est-total-amount { font-size:1.75rem; font-weight:700; color:var(--primary); }
+    .est-total-korean { font-size:0.875rem; color:var(--gray-500); text-align:right; margin-top:4px; }
+
+    /* 공통 테이블 */
+    .est-table { width:100%; border-collapse:collapse; margin-bottom:16px; }
+    .est-table th { background:var(--gray-100); border:1px solid var(--gray-300); padding:10px 8px; font-size:0.8125rem; font-weight:700; color:var(--gray-600); text-align:center; }
+    .est-table td { border:1px solid var(--gray-200); padding:10px 8px; font-size:0.875rem; color:var(--gray-700); }
+    .est-table td.right { text-align:right; font-weight:600; }
+    .est-table td.center { text-align:center; }
+    .est-table tr.trade-row td { background:var(--gray-50); font-weight:700; color:var(--gray-800); }
+    .est-table tr.sub-row td { padding-left:20px; font-size:0.8125rem; color:var(--gray-600); }
+    .est-table tr.total-row td { background:var(--primary-bg); font-weight:700; border-top:2px solid var(--gray-800); }
+
+    /* 공종 상세 섹션 */
+    .trade-detail { margin-bottom:24px; }
+    .trade-detail-title { font-size:1.25rem; font-weight:700; padding:10px 14px; background:var(--gray-100); border-left:4px solid var(--primary); margin-bottom:16px; }
+    .detail-table { width:100%; border-collapse:collapse; margin-bottom:12px; }
+    .detail-table th { background:var(--gray-50); border:1px solid var(--gray-200); padding:8px; font-size:0.75rem; font-weight:700; color:var(--gray-500); text-align:center; }
+    .detail-table td { border:1px solid var(--gray-200); padding:8px; font-size:0.8125rem; color:var(--gray-700); }
+    .detail-table td.right { text-align:right; font-weight:600; }
+    .detail-table td.center { text-align:center; font-size:0.75rem; color:var(--gray-500); }
+    .detail-table tr.subtotal td { background:var(--gray-50); font-weight:700; border-top:1.5px solid var(--gray-300); }
+
+    /* 서명란 */
+    .est-sign { display:flex; gap:20px; margin-top:24px; padding-top:20px; border-top:1px solid var(--gray-300); }
+    .est-sign-box { flex:1; text-align:center; }
+    .est-sign-label { font-size:0.875rem; color:var(--gray-500); margin-bottom:40px; }
+    .est-sign-line { border-top:1px solid var(--gray-400); padding-top:6px; font-size:0.8125rem; color:var(--gray-400); }
+    .est-notice { font-size:0.8125rem; color:var(--gray-400); line-height:1.6; margin-top:16px; }
+
+    /* 근거자료 */
+    .ref-section { margin-top:20px; padding-top:16px; border-top:1px solid var(--gray-300); }
+    .ref-title { font-size:1rem; font-weight:700; margin-bottom:8px; }
+    .ref-list { font-size:0.8125rem; color:var(--gray-600); line-height:2; }
+
+    /* 하단 버튼 */
+    .btn-bar { position:fixed; bottom:0; left:0; right:0; padding:12px 24px; background:white; border-top:1px solid var(--gray-200); display:flex; gap:10px; z-index:100; }
+    .btn-bar .btn { flex:1; }
+    @media print {
+      .btn-bar { display:none; }
+      .page-section { page-break-before:always; }
+      .page-section:first-child { page-break-before:auto; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="doc">
+
+  <!-- ============================================ -->
+  <!-- 1페이지: 총견적서 (표지)                       -->
+  <!-- ============================================ -->
+  <div class="page-section">
+    <div class="est-title">견 적 서</div>
+
+    <table class="est-info-table">
+      <tr><td class="est-info-label">공사명</td><td class="est-info-value">○○아파트 ○동 ○호 누수 피해복구 공사</td></tr>
+      <tr><td class="est-info-label">현장주소</td><td class="est-info-value">서울시 ○○구 ○○로 ○○, ○동 ○호</td></tr>
+      <tr><td class="est-info-label">견적일자</td><td class="est-info-value" id="est-date"></td></tr>
+      <tr><td class="est-info-label">유효기간</td><td class="est-info-value">견적일로부터 30일</td></tr>
+    </table>
+
+    <div class="est-total-box">
+      <div>
+        <div class="est-total-label">합계금액 (VAT 포함)</div>
+        <div class="est-total-korean" id="est-korean"></div>
+      </div>
+      <div class="est-total-amount" id="est-grand-total"></div>
+    </div>
+
+    <table class="est-table">
+      <thead>
+        <tr>
+          <th style="width:35px;">No</th>
+          <th>공종</th>
+          <th style="width:100px;">금액</th>
+          <th style="width:50px;">첨부</th>
+        </tr>
+      </thead>
+      <tbody id="est-summary-tbody"></tbody>
+    </table>
+
+    <div class="est-sign">
+      <div class="est-sign-box"><div class="est-sign-label">견적자</div><div class="est-sign-line">(인)</div></div>
+      <div class="est-sign-box"><div class="est-sign-label">확인자</div><div class="est-sign-line">(인)</div></div>
+    </div>
+
+    <div class="est-notice">
+      ※ 본 견적은 건설공사 표준품셈 및 시중노임단가를 근거로 산출되었습니다.<br>
+      ※ 현장 여건에 따라 항목 및 금액이 변동될 수 있습니다.<br>
+      ※ 부가세(10%)가 포함된 금액입니다. (이사·숙박은 실비 정산)<br>
+      ※ 상세 산출 근거는 첨부 공종별 상세 견적 및 산출내역서를 참조하십시오.
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 2페이지~: 공종별 상세 (첨부)                    -->
+  <!-- ============================================ -->
+  <div id="trade-details"></div>
+
+  <!-- 마지막: 산출 근거자료 -->
+  <div class="page-section">
+    <div class="ref-section" style="border-top:none; padding-top:0;">
+      <div class="trade-detail-title">산출 근거자료</div>
+      <div class="ref-list">
+        1. 건설공사 표준품셈 (2025년) — 국토교통부 고시<br>
+        &nbsp;&nbsp;&nbsp;· 제3장 석고보드 공사 / 제4장 타일 공사 / 제5장 수장공사 (도배·몰딩·바닥)<br>
+        &nbsp;&nbsp;&nbsp;· 제6장 도장공사 / 제7장 설비공사 / 방수공사<br>
+        2. 시중노임단가 (2026년 상반기) — 대한건설협회 공표<br>
+        &nbsp;&nbsp;&nbsp;· 도배공 227,614원 / 목공 236,457원 / 설비공 250,000원 / 타일공 235,000원<br>
+        &nbsp;&nbsp;&nbsp;· 도장공 228,000원 / 마루공 220,000원 / 방수공 235,000원<br>
+        &nbsp;&nbsp;&nbsp;· 미장공 230,000원 / 전기공 242,000원 / 보통인부 150,316원<br>
+        3. 자재단가 — 한국물가정보 참조<br>
+        4. 자재 로스율 10% — 표준품셈 기준 적용<br>
+        5. 지장물 감소율 15% — 실거주 세대 적용 (표준품셈)<br>
+        6. 이사·숙박비 — 화재보험 약관 "손해방지비용" + "임시 거주비" 근거
+      </div>
+    </div>
+  </div>
+
+  <div style="height:80px;"></div>
+</div>
+
+<!-- 하단 버튼 -->
+<div class="btn-bar">
+  <a href="견적_총견적.html" class="btn btn-secondary btn-lg" style="text-decoration:none; text-align:center;">돌아가기</a>
+  <button class="btn btn-primary btn-lg" onclick="window.print()">인쇄 / PDF 저장</button>
+</div>
+
+<script src="../common/trades/unit-prices.js"></script>
+<script src="../common/components.js"></script>
+<script>
+  function fmtN(n) { return n.toLocaleString('ko-KR'); }
+  function numToKorean(n) {
+    if (n === 0) return '영';
+    const units = ['', '만', '억'];
+    const digits = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+    const subUnits = ['', '십', '백', '천'];
+    let result = '', unitIdx = 0;
+    while (n > 0) {
+      let chunk = n % 10000;
+      if (chunk > 0) {
+        let chunkStr = '', pos = 0;
+        while (chunk > 0) {
+          let d = chunk % 10;
+          if (d > 0) chunkStr = digits[d] + subUnits[pos] + chunkStr;
+          chunk = Math.floor(chunk / 10);
+          pos++;
+        }
+        result = chunkStr + units[unitIdx] + result;
+      }
+      n = Math.floor(n / 10000);
+      unitIdx++;
+    }
+    return result;
+  }
+
+  const today = new Date();
+  document.getElementById('est-date').textContent = today.getFullYear() + '년 ' + (today.getMonth()+1) + '월 ' + today.getDate() + '일';
+
+  // ===== 공종별 견적 데이터 (목업 — 실제 구현 시 각 탭 데이터 연동) =====
+  const TRADES_DATA = [
+    {
+      name: '도배공사', ref: '첨부1',
+      items: [
+        { name: '도배공 작업 (벽면·천장 시공, 철거, 하지, 프라이머, 마감)', worker: '도배공', poom: 5.0, amount: 1138070 },
+        { name: '자재비 (실크벽지, 합지, 초배지, 프라이머, 부자재)', worker: '—', poom: null, amount: 850000 },
+        { name: '보통인부 (보양, 가구이동, 곰팡이방지, 폐기물)', worker: '보통인부', poom: 2.4, amount: 491759 },
+      ]
+    },
+    {
+      name: '목공공사', ref: '첨부2',
+      items: [
+        { name: '목공 작업 (석고보드 설치·해체, 몰딩, 코킹)', worker: '목공', poom: 1.5, amount: 354686 },
+        { name: '미장공 작업 (퍼티·줄눈)', worker: '미장공', poom: 0.3, amount: 69000 },
+        { name: '자재비 (석고보드, 나사, 퍼티, 테이프, 실리콘)', worker: '—', poom: null, amount: 120370 },
+        { name: '보통인부 (보양, 분진차단, 곰팡이방지, 건조확인, 폐기물)', worker: '보통인부', poom: 3.1, amount: 581000 },
+      ]
+    },
+    {
+      name: '싱크대공사', ref: '첨부3',
+      items: [
+        { name: '설비공 작업 (철거, 배관, 수전, 씽크볼, 코킹, 테스트)', worker: '설비공', poom: 1.8, amount: 450000 },
+        { name: '목공 작업 (하부장·상부장·장식장·상판 설치)', worker: '목공', poom: 1.5, amount: 354686 },
+        { name: '자재비 (하부장, 상판, 씽크볼, 부속, 수전)', worker: '—', poom: null, amount: 780000 },
+        { name: '보통인부 (보양, 폐기물 반출 2명×1일)', worker: '보통인부', poom: 2.3, amount: 495727 },
+      ]
+    },
+    {
+      name: '바닥공사', ref: '첨부4',
+      items: [
+        { name: '마루공 작업 (강마루 시공, 걸레받이, 문턱, 마감)', worker: '마루공', poom: 2.0, amount: 440000 },
+        { name: '자재비 (강마루, 걸레받이, 문턱, 실리콘)', worker: '—', poom: null, amount: 520000 },
+        { name: '보통인부 (가구이동, 철거, 건조, 폐기물, 원위치)', worker: '보통인부', poom: 3.5, amount: 526106 },
+      ]
+    },
+    {
+      name: '페인트공사', ref: '첨부5',
+      items: [
+        { name: '도장공 작업 (벽면·천장 도장 2회, 프라이머, 퍼티)', worker: '도장공', poom: 3.0, amount: 684000 },
+        { name: '자재비 (수성페인트, 프라이머, 퍼티, 마스킹)', worker: '—', poom: null, amount: 180000 },
+        { name: '보통인부 (보양, 마스킹, 보양철거, 폐기물)', worker: '보통인부', poom: 1.3, amount: 195411 },
+      ]
+    },
+    {
+      name: '화장실공사', ref: '첨부6',
+      items: [
+        { name: '타일공 작업 (바닥·벽면 타일 철거+시공+줄눈)', worker: '타일공', poom: 4.0, amount: 940000 },
+        { name: '설비공 작업 (양변기·세면대 철거+재설치, 배관, 테스트)', worker: '설비공', poom: 1.5, amount: 375000 },
+        { name: '방수공 작업 (바닥 방수 2회+보호몰탈, 담수 테스트)', worker: '방수공', poom: 1.2, amount: 282000 },
+        { name: '자재비 (타일, 줄눈재, 방수재, 부속)', worker: '—', poom: null, amount: 450000 },
+        { name: '보통인부 (입구보양, 돔천장, 악세사리, 폐기물)', worker: '보통인부', poom: 2.5, amount: 505790 },
+      ]
+    },
+    {
+      name: '청소', ref: '첨부7',
+      items: [
+        { name: '보통인부 (1차 대청소, 바닥, 유리창, 화장실, 살균, 2차 마무리)', worker: '보통인부', poom: 2.8, amount: 420885 },
+        { name: '자재비 (세정제, 살균소독 약품, 폐기물 스티커)', worker: '—', poom: null, amount: 79500 },
+      ]
+    },
+    {
+      name: '이사·숙박', ref: '첨부8', noVat: true,
+      items: [
+        { name: '단기 이사 (포장 인부 2명 × 왕복, 2.5톤 차량 왕복, 포장 자재)', worker: '보통인부', poom: 4.0, amount: 851264 },
+        { name: '임시 보관 (컨테이너 14일)', worker: '—', poom: null, amount: 70000 },
+        { name: '숙박비 (비즈니스호텔 14박 × 1실)', worker: '—', poom: null, amount: 1120000 },
+      ]
+    },
+  ];
+
+  // ===== 1페이지: 요약 테이블 =====
+  let summaryHtml = '';
+  let grandSupply = 0;
+  let noVatTotal = 0;
+
+  TRADES_DATA.forEach((trade, i) => {
+    const tradeTotal = trade.items.reduce((s, it) => s + it.amount, 0);
+    if (trade.noVat) {
+      noVatTotal += tradeTotal;
+    } else {
+      grandSupply += tradeTotal;
+    }
+    summaryHtml += `<tr class="trade-row">
+      <td class="center">${i + 1}</td>
+      <td>${trade.name}</td>
+      <td class="right">${fmtN(tradeTotal)}원</td>
+      <td class="center" style="font-size:0.75rem; color:var(--gray-400);">${trade.ref}</td>
+    </tr>`;
+  });
+
+  const vat = Math.round(grandSupply * 0.1);
+  const grandTotal = grandSupply + vat + noVatTotal;
+
+  summaryHtml += `<tr><td></td><td style="text-align:right; font-weight:600;">공급가액 (공사비)</td><td class="right">${fmtN(grandSupply)}원</td><td></td></tr>`;
+  summaryHtml += `<tr><td></td><td style="text-align:right; font-weight:600;">부가세 (10%)</td><td class="right">${fmtN(vat)}원</td><td></td></tr>`;
+  if (noVatTotal > 0) {
+    summaryHtml += `<tr><td></td><td style="text-align:right; font-weight:600;">이사·숙박 (실비)</td><td class="right">${fmtN(noVatTotal)}원</td><td></td></tr>`;
+  }
+  summaryHtml += `<tr class="total-row"><td></td><td style="text-align:right;">합계금액</td><td class="right" style="color:var(--primary); font-size:1rem;">${fmtN(grandTotal)}원</td><td></td></tr>`;
+
+  document.getElementById('est-summary-tbody').innerHTML = summaryHtml;
+  document.getElementById('est-grand-total').textContent = fmtN(grandTotal) + '원';
+  document.getElementById('est-korean').textContent = '금 ' + numToKorean(grandTotal) + '원정';
+
+  // ===== 2페이지~: 공종별 상세 =====
+  let detailsHtml = '';
+
+  TRADES_DATA.forEach((trade, i) => {
+    const tradeTotal = trade.items.reduce((s, it) => s + it.amount, 0);
+
+    detailsHtml += `<div class="page-section">
+      <div class="trade-detail">
+        <div class="trade-detail-title">${trade.ref}. ${trade.name} 상세</div>
+        <table class="detail-table">
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th style="width:70px;">직종</th>
+              <th style="width:50px;">품수</th>
+              <th style="width:100px;">금액</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${trade.items.map(it => `
+              <tr>
+                <td>${it.name}</td>
+                <td class="center">${it.worker}</td>
+                <td class="center">${it.poom ? it.poom + '품' : '—'}</td>
+                <td class="right">${fmtN(it.amount)}원</td>
+              </tr>
+            `).join('')}
+            <tr class="subtotal">
+              <td colspan="3" style="text-align:right;">${trade.name} 소계${trade.noVat ? ' (실비, VAT 없음)' : ''}</td>
+              <td class="right" style="color:var(--primary);">${fmtN(tradeTotal)}원</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('trade-details').innerHTML = detailsHtml;
+
+  LTI.renderFeaturePanel({
+    target: '.doc',
+    features: [
+      { text: '1페이지: 총견적서 표지 — 공사명·현장·합계금액(한글 표기)·8개 공종 요약·서명란' },
+      { text: '2~9페이지: 공종별 상세 — 항목/직종/품수/금액 테이블 (첨부1~8)' },
+      { text: '마지막: 산출 근거자료 — 표준품셈·시중노임단가·한국물가정보 참조 문서' },
+      { text: '이사·숙박은 VAT 별도 (실비 정산, noVat 플래그)' },
+      { text: '인쇄/PDF 저장 — @media print 페이지 구분 (page-break-before)' },
+      { text: '한글 금액 표기 (numToKorean 함수)' },
+      { text: '★ 개발 노트: 현재 목업 데이터 — 실제 구현 시 각 공종 탭 데이터 연동 필요' },
+    ],
+  });
+</script>
+</body>
+</html>

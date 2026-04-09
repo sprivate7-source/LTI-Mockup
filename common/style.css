@@ -1,0 +1,580 @@
+/* ============================================
+   LTI 목업 공통 스타일
+   - 12인치 태블릿 (아이패드) 최적화
+   - 50~60대 사용자 + 아랫집 고객 대면용
+   - 순수 CSS, 외부 라이브러리 없음
+   ============================================ */
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Pretendard", "Noto Sans KR", sans-serif;
+  color: #1a1a1a;
+  background: #f5f5f0;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* --- 색상 변수 (LTR 앰버 계열) --- */
+:root {
+  /* 주 색상 — LTR 프라이머리 앰버 */
+  --primary: #c8871e;
+  --primary-light: #e6a83a;
+  --primary-dark: #a06c15;
+  --primary-bg: #fdf6e8;
+
+  /* 보조 색상 */
+  --success: #2d8a4e;
+  --success-bg: #eaf5ee;
+  --warning: #d4870e;
+  --warning-bg: #fef6e6;
+  --danger: #c0392b;
+  --danger-bg: #fdeaea;
+  --info: #2874a6;
+  --info-bg: #e8f0f8;
+
+  /* 중립 색상 */
+  --gray-50: #fafaf8;
+  --gray-100: #f5f5f0;
+  --gray-200: #e8e8e0;
+  --gray-300: #d0d0c8;
+  --gray-400: #a0a098;
+  --gray-500: #707068;
+  --gray-600: #505048;
+  --gray-700: #383830;
+  --gray-800: #1a1a1a;
+
+  /* 레이아웃 */
+  --header-height: 64px;
+  --page-padding: 24px;
+  --card-radius: 12px;
+  --btn-radius: 10px;
+
+  /* 그림자 */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* --- 타이포그래피 (큰 글씨) --- */
+h1 { font-size: 1.75rem; font-weight: 700; color: var(--gray-800); }
+h2 { font-size: 1.5rem;  font-weight: 700; color: var(--gray-800); }
+h3 { font-size: 1.25rem; font-weight: 600; color: var(--gray-700); }
+h4 { font-size: 1.125rem;font-weight: 600; color: var(--gray-700); }
+
+p, li, td, th, label, span {
+  font-size: 1.125rem; /* 18px — 기본 본문 */
+}
+
+small, .text-sm {
+  font-size: 1rem;
+}
+
+.text-xs {
+  font-size: 0.875rem;
+}
+
+.text-muted {
+  color: var(--gray-500);
+}
+
+/* --- 레이아웃 --- */
+.page {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: var(--page-padding);
+  padding-top: calc(var(--header-height) + var(--page-padding));
+  min-height: 100vh;
+}
+
+/* --- 상단 헤더 --- */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  background: white;
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--page-padding);
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-back {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  color: var(--gray-600);
+  flex-shrink: 0;
+}
+.header-back:active {
+  background: var(--gray-100);
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-action {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* --- 카드 --- */
+.card {
+  background: white;
+  border-radius: var(--card-radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 12px;
+}
+
+/* --- 버튼 (터치 타겟 48px 이상) --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 12px 24px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--btn-radius);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  line-height: 1.4;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+.btn-primary:active {
+  background: var(--primary-dark);
+}
+
+.btn-secondary {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+}
+.btn-secondary:active {
+  background: var(--gray-200);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-success {
+  background: var(--success);
+  color: white;
+}
+
+.btn-outline {
+  background: white;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+.btn-outline:active {
+  background: var(--primary-bg);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn-lg {
+  min-height: 60px;
+  font-size: 1.25rem;
+  padding: 16px 32px;
+}
+
+.btn-sm {
+  min-height: 40px;
+  font-size: 1rem;
+  padding: 8px 16px;
+}
+
+/* --- 폼 요소 --- */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-bottom: 8px;
+}
+
+.form-label .required {
+  color: var(--danger);
+  margin-left: 2px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 16px;
+  font-size: 1.125rem;
+  border: 1.5px solid var(--gray-300);
+  border-radius: 8px;
+  background: white;
+  color: var(--gray-800);
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(200, 135, 30, 0.15);
+}
+
+.form-input::placeholder {
+  color: var(--gray-400);
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23707068' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 44px;
+}
+
+/* --- 체크박스 / 라디오 (큰 터치 영역) --- */
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--gray-100);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.check-item:last-child {
+  border-bottom: none;
+}
+
+.check-item input[type="checkbox"],
+.check-item input[type="radio"] {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--primary);
+  flex-shrink: 0;
+}
+
+.check-item label {
+  font-size: 1.125rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+/* --- 배지 / 상태 태그 --- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.badge-primary  { background: var(--primary-bg); color: var(--primary-dark); }
+.badge-success  { background: var(--success-bg); color: var(--success); }
+.badge-warning  { background: var(--warning-bg); color: var(--warning); }
+.badge-danger   { background: var(--danger-bg);  color: var(--danger); }
+.badge-info     { background: var(--info-bg);    color: var(--info); }
+.badge-gray     { background: var(--gray-200);   color: var(--gray-600); }
+
+/* --- 진행 단계 표시 --- */
+.steps {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+
+.step {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--gray-200);
+}
+
+.step.active {
+  background: var(--primary);
+}
+
+.step.done {
+  background: var(--success);
+}
+
+/* --- 구분선 --- */
+.divider {
+  height: 1px;
+  background: var(--gray-200);
+  margin: 20px 0;
+}
+
+/* --- 리스트 아이템 (터치 목록) --- */
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--gray-100);
+  cursor: pointer;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+.list-item:last-child {
+  border-bottom: none;
+}
+.list-item:active {
+  background: var(--gray-50);
+}
+
+.list-item-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.list-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.list-item-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.list-item-desc {
+  font-size: 0.9375rem;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.list-item-arrow {
+  color: var(--gray-400);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* --- 알림 박스 --- */
+.alert {
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.alert-info    { background: var(--info-bg);    color: var(--info);    border-left: 4px solid var(--info); }
+.alert-success { background: var(--success-bg); color: var(--success); border-left: 4px solid var(--success); }
+.alert-warning { background: var(--warning-bg); color: var(--warning); border-left: 4px solid var(--warning); }
+.alert-danger  { background: var(--danger-bg);  color: var(--danger);  border-left: 4px solid var(--danger); }
+
+/* --- [기능 보기] 패널 --- */
+.feature-panel {
+  background: #fffde6;
+  border: 2px dashed var(--warning);
+  border-radius: var(--card-radius);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.feature-toggle {
+  width: 100%;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--warning);
+}
+
+.feature-toggle-icon {
+  transition: transform 0.2s;
+}
+
+.feature-panel.open .feature-toggle-icon {
+  transform: rotate(180deg);
+}
+
+.feature-content {
+  display: none;
+  padding: 0 20px 20px;
+}
+
+.feature-panel.open .feature-content {
+  display: block;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 1rem;
+  color: var(--gray-700);
+}
+
+.feature-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--success);
+  flex-shrink: 0;
+}
+
+/* --- 금액 표시 --- */
+.amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.amount-lg {
+  font-size: 1.5rem;
+}
+
+/* --- 유틸리티 --- */
+.flex       { display: flex; }
+.flex-col   { flex-direction: column; }
+.flex-wrap  { flex-wrap: wrap; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center  { justify-content: center; }
+.gap-8   { gap: 8px; }
+.gap-12  { gap: 12px; }
+.gap-16  { gap: 16px; }
+.gap-20  { gap: 20px; }
+.mt-8    { margin-top: 8px; }
+.mt-12   { margin-top: 12px; }
+.mt-16   { margin-top: 16px; }
+.mt-20   { margin-top: 20px; }
+.mt-24   { margin-top: 24px; }
+.mb-8    { margin-bottom: 8px; }
+.mb-12   { margin-bottom: 12px; }
+.mb-16   { margin-bottom: 16px; }
+.mb-20   { margin-bottom: 20px; }
+.p-0     { padding: 0; }
+.text-center { text-align: center; }
+.text-right  { text-align: right; }
+.font-bold   { font-weight: 700; }
+.hidden  { display: none; }
+
+/* --- 하단 고정 버튼 영역 --- */
+.bottom-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px var(--page-padding);
+  background: white;
+  border-top: 1px solid var(--gray-200);
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+  z-index: 90;
+}
+
+.bottom-fixed .page {
+  padding: 0;
+  min-height: auto;
+}
+
+/* 하단 고정 버튼이 있을 때 페이지 하단 여백 */
+.has-bottom-fixed {
+  padding-bottom: 100px;
+}
+
+/* --- 태블릿 반응형 --- */
+@media (min-width: 1024px) {
+  .page {
+    max-width: 960px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --page-padding: 16px;
+    --header-height: 56px;
+  }
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+}

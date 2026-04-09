@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — 견적 (목공)</title>
+  <link rel="stylesheet" href="../common/style.css">
+  <link rel="stylesheet" href="../common/tab-bar.css">
+  <style>
+    .work-section { background:white; border:1.5px solid var(--gray-200); border-radius:14px; margin-bottom:14px; overflow:hidden; }
+    .work-section.active { border-color:var(--primary); }
+    .work-header { display:flex; align-items:center; padding:16px; gap:10px; }
+    .work-check { width:24px; height:24px; accent-color:var(--primary); flex-shrink:0; }
+    .work-title { flex:1; font-size:1.0625rem; font-weight:700; color:var(--gray-800); }
+    .work-ref { font-size:0.6875rem; color:var(--gray-400); white-space:nowrap; }
+    .work-body { padding:0 16px 16px; display:none; }
+    .work-section.active .work-body { display:block; }
+    .work-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+    .work-label { font-size:0.875rem; color:var(--gray-500); min-width:70px; }
+    .work-input { width:72px; text-align:center; padding:10px 6px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:1rem; font-weight:600; color:var(--gray-800); }
+    .work-input:focus { border-color:var(--primary); outline:none; }
+    .work-unit { font-size:0.875rem; color:var(--gray-500); }
+    .work-result { font-size:0.875rem; font-weight:700; color:var(--primary); margin-left:auto; white-space:nowrap; }
+    .work-dims { display:flex; align-items:center; gap:8px; margin-bottom:8px; margin-left:16px; }
+    .dim-input { width:72px; text-align:center; padding:10px 6px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:1rem; font-weight:600; color:var(--gray-800); }
+    .dim-input:focus { border-color:var(--primary); outline:none; }
+    .dim-x { font-size:1.125rem; color:var(--gray-400); font-weight:700; }
+    .dim-label { font-size:0.875rem; color:var(--gray-500); }
+    .wp-btn { padding:6px 14px; border:1.5px solid var(--gray-200); border-radius:8px; background:white; font-size:0.875rem; font-weight:600; color:var(--gray-500); cursor:pointer; }
+    .wp-btn.selected { border-color:var(--primary); background:var(--primary-bg); color:var(--primary); }
+    .wallpaper-select { display:flex; gap:6px; }
+    .area-summary { background:white; border:1.5px solid var(--gray-200); border-radius:14px; padding:16px; margin-bottom:16px; }
+    .area-summary-title { font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:10px; }
+    .area-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; }
+    .area-label { font-size:0.9375rem; color:var(--gray-600); }
+    .area-value { font-size:0.9375rem; font-weight:700; color:var(--gray-800); }
+    .area-value.primary { color:var(--primary); font-size:1.125rem; }
+    .condition-section { background:white; border:1.5px solid var(--gray-200); border-radius:14px; padding:16px; margin-bottom:16px; }
+    .condition-title { font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:12px; }
+    .condition-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--gray-100); }
+    .condition-item:last-child { border-bottom:none; }
+    .condition-check { width:24px; height:24px; accent-color:var(--primary); }
+    .condition-label { font-size:0.9375rem; font-weight:600; color:var(--gray-700); }
+    .condition-desc { font-size:0.75rem; color:var(--gray-400); }
+    .price-link { display:flex; align-items:center; gap:8px; padding:12px 16px; background:var(--info-bg); border-radius:10px; margin-bottom:16px; text-decoration:none; color:var(--info); font-size:0.875rem; font-weight:600; }
+    .cond-cost { font-size:0.8125rem; font-weight:700; color:var(--primary); white-space:nowrap; min-width:70px; text-align:right; }
+    .add-area-btn { margin:4px 0 8px 16px; border:1.5px dashed var(--gray-300); border-radius:6px; background:none; color:var(--gray-400); font-size:0.8125rem; padding:4px 12px; cursor:pointer; }
+    .add-area-btn:active { border-color:var(--primary); color:var(--primary); }
+    .del-btn { width:24px; height:24px; display:flex; align-items:center; justify-content:center; border:none; background:none; color:var(--gray-300); cursor:pointer; font-size:0.875rem; border-radius:4px; }
+    .del-btn:active { background:var(--danger-bg); color:var(--danger); }
+    .sub-item { display:flex; align-items:center; gap:8px; padding:8px 0 8px 16px; border-bottom:1px solid var(--gray-100); }
+    .sub-item:last-child { border-bottom:none; }
+    .sub-label { font-size:0.875rem; color:var(--gray-600); flex:1; }
+    .sub-value { font-size:0.875rem; font-weight:600; color:var(--gray-700); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="../01_현장상세.html" class="header-back" aria-label="뒤로가기">&#8249;</a>
+    <div class="header-title">아랫집 피해복구</div>
+    <div class="header-action"></div>
+  </div>
+
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="sub-tab-bar" id="sub-tab-bar"></div>
+
+  <div class="page-tab">
+
+    <a href="견적_단가설정.html" class="price-link">
+      <span>&#9881;</span>
+      <span>기준단가 설정 (2026년 상반기 적용중)</span>
+      <span style="margin-left:auto; font-size:1.25rem;">&#8250;</span>
+    </a>
+
+    <!-- 1. 석고보드 교체 -->
+    <div class="work-section" id="sec-gyp">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-gyp" onchange="toggleSection('gyp')">
+        <div>
+          <div class="work-title">석고보드 교체</div>
+          <div class="work-ref">표준품셈 3-4 · 목공 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">보드 두께</span>
+          <div class="wallpaper-select">
+            <button class="wp-btn selected" id="gyp-95" onclick="gypThickness='9.5'; document.getElementById('gyp-95').classList.add('selected'); document.getElementById('gyp-125').classList.remove('selected');">9.5mm</button>
+            <button class="wp-btn" id="gyp-125" onclick="gypThickness='12.5'; document.getElementById('gyp-125').classList.add('selected'); document.getElementById('gyp-95').classList.remove('selected');">12.5mm</button>
+          </div>
+        </div>
+        <div id="gyp-areas"></div>
+        <button class="add-area-btn" onclick="addGypArea()">+ 영역 추가</button>
+      </div>
+    </div>
+
+    <!-- 2. 상부 몰딩 -->
+    <div class="work-section" id="sec-mold">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-mold" onchange="toggleSection('mold')">
+        <div>
+          <div class="work-title">상부 몰딩 (크라운 몰딩)</div>
+          <div class="work-ref">표준품셈 5-3 수장공사 · 목공 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">자재</span>
+          <div class="wallpaper-select">
+            <button class="wp-btn selected" onclick="moldMat='pvc'; renderMoldMat(this)">PVC</button>
+            <button class="wp-btn" onclick="moldMat='mdf'; renderMoldMat(this)">MDF</button>
+            <button class="wp-btn" onclick="moldMat='wood'; renderMoldMat(this)">원목</button>
+          </div>
+        </div>
+        <div class="work-row">
+          <span class="work-label">길이</span>
+          <input class="work-input" type="text" inputmode="decimal" id="mold-length" value="0"
+            onfocus="this.select()" oninput="recalcSummary()">
+          <span class="work-unit">m</span>
+          <span class="work-result" id="mold-result"></span>
+        </div>
+        <div class="sub-item">
+          <span class="sub-label">해체: 목공 0.02품/m</span>
+          <span class="sub-label">설치: 목공 0.04품/m</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 걸레받이 -->
+    <div class="work-section" id="sec-base">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-base" onchange="toggleSection('base')">
+        <div>
+          <div class="work-title">걸레받이 (하부 몰딩)</div>
+          <div class="work-ref">표준품셈 5-3 수장공사 · 목공 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">자재</span>
+          <div class="wallpaper-select">
+            <button class="wp-btn selected" onclick="baseMat='pvc'; renderBaseMat(this)">PVC</button>
+            <button class="wp-btn" onclick="baseMat='mdf'; renderBaseMat(this)">MDF</button>
+          </div>
+        </div>
+        <div class="work-row">
+          <span class="work-label">길이</span>
+          <input class="work-input" type="text" inputmode="decimal" id="base-length" value="0"
+            onfocus="this.select()" oninput="recalcSummary()">
+          <span class="work-unit">m</span>
+          <span class="work-result" id="base-result"></span>
+        </div>
+        <div class="sub-item">
+          <span class="sub-label">해체: 목공 0.015품/m</span>
+          <span class="sub-label">설치: 목공 0.03품/m</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 상 수리 -->
+    <div class="work-section" id="sec-cab">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-cab" onchange="toggleSection('cab')">
+        <div>
+          <div class="work-title">상 수리 (붙박이장·장식장 등)</div>
+          <div class="work-ref">표준품셈 5-4 가구공사 · 목공 품셈</div>
+        </div>
+      </div>
+      <div class="work-body">
+        <div id="cab-items"></div>
+        <button class="add-area-btn" onclick="addCabItem()">+ 수리 항목 추가</button>
+      </div>
+    </div>
+
+    <!-- 합계 -->
+    <div class="area-summary" id="area-summary"></div>
+
+    <!-- 현장 조건 -->
+    <div class="condition-section">
+      <div class="condition-title">현장 조건</div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-protect" checked onchange="recalcSummary()">
+        <div style="flex:1;">
+          <div class="condition-label">바닥·가구 보양</div>
+          <div class="condition-desc">보통인부 — 면적 기반 품수 자동 (표준품셈)</div>
+        </div>
+        <span class="cond-cost" id="cost-protect"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-dust" checked onchange="recalcSummary()">
+        <div style="flex:1;">
+          <div class="condition-label">분진 차단막 설치</div>
+          <div class="condition-desc">보통인부 0.3품 + 차단막 자재 — 실거주 세대 필수</div>
+        </div>
+        <span class="cond-cost" id="cost-dust"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-obstacle" checked onchange="recalcSummary()">
+        <div style="flex:1;">
+          <div class="condition-label">가구 이동 (지장물)</div>
+          <div class="condition-desc">보통인부 1.0품</div>
+        </div>
+        <span class="cond-cost" id="cost-obstacle"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-mold" checked onchange="recalcSummary()">
+        <div style="flex:1;">
+          <div class="condition-label">곰팡이 방지 처리</div>
+          <div class="condition-desc">보통인부 — 약품 도포 + 약품비 (누수 원인 필수)</div>
+        </div>
+        <span class="cond-cost" id="cost-mold"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-dry" checked onchange="recalcSummary()">
+        <div style="flex:1;">
+          <div class="condition-label">하지 건조 확인</div>
+          <div class="condition-desc">보통인부 0.5품 — 수분 측정 (건조 안 되면 재발)</div>
+        </div>
+        <span class="cond-cost" id="cost-dry"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-light" onchange="recalcSummary()">
+        <div style="flex:1;">
+          <div class="condition-label">조명·전기 분리/재설치</div>
+          <div class="condition-desc">전기공 — 천장 작업 시 조명 분리 + 재설치</div>
+        </div>
+        <span class="cond-cost" id="cost-light"></span>
+      </div>
+      <div id="light-input" style="display:none; padding:8px 0 0 56px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="work-label">조명 개수</span>
+          <input class="work-input" type="text" inputmode="numeric" id="light-qty" value="2" style="width:56px;"
+            onfocus="this.select()" oninput="recalcSummary()">
+          <span class="work-unit">개소</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);">전기공 0.6품/개소</span>
+        </div>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-caulk" checked onchange="recalcSummary()">
+        <div style="flex:1;">
+          <div class="condition-label">코킹·실리콘 마감</div>
+          <div class="condition-desc">목공 — 이음새 방수 처리</div>
+        </div>
+        <span class="cond-cost" id="cost-caulk"></span>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-waste" checked onchange="recalcSummary()">
+        <div style="flex:1;">
+          <div class="condition-label">폐기물 처리</div>
+          <div class="condition-desc">스티커 + 운반비 포함</div>
+        </div>
+        <span class="cond-cost" id="cost-waste"></span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-full btn-lg mt-20" onclick="generateEstimate()">
+      견적 자동 생성
+    </button>
+
+    <div style="height:32px;"></div>
+  </div>
+
+  <script src="../common/trades/unit-prices.js"></script>
+  <script src="../common/components.js"></script>
+  <script src="../common/tab-bar.js"></script>
+  <script>
+    renderTabBar('estimate', '목공');
+
+    LTI.renderFeaturePanel({
+      target: '.page-tab',
+      features: [
+        { text: '기준단가 설정 링크 — 노임·자재·품셈 단가 확인/수정' },
+        { text: '석고보드 교체 — 영역 쪼개기(최대 6개) + 보드 두께(9.5/12.5mm) + 해체/설치/퍼티 자동' },
+        { text: '상부 몰딩 — 길이(m) + 자재(PVC/MDF/원목) + 해체·설치 품수 자동' },
+        { text: '걸레받이 — 길이(m) + 자재(PVC/MDF) + 해체·설치 품수 자동' },
+        { text: '상 수리 — 부분절단재설치(m)/전체해체재설치/문짝교체/경첩교체 + 수량·항목 추가' },
+        { text: '모든 항목 목공 품셈 · 표준품셈 근거 적용' },
+        { text: '미장공 퍼티·줄눈 — 석고보드 마감에 미장공 별도 직종 품셈 적용' },
+        { text: '현장 조건 8개 — 보양·분진차단·가구이동·곰팡이방지·건조확인·조명분리·코킹·폐기물' },
+        { text: '★ 현장조건 실시간 금액 표시 — 각 조건 옆에 원 단위 비용 즉시 표시' },
+        { text: '조명/전기 분리·재설치 — 개수 입력 + 전기공 품셈 적용 (0.6품/개소)' },
+        { text: '시공 항목 요약 — 체크된 항목의 수량·면적 실시간 미리보기' },
+        { text: '견적 자동 생성 → 목공+미장공+전기공+보통인부 직종별 분리 산출' },
+        { text: '체크한 항목만 견적에 포함' },
+      ],
+    });
+
+    function fmtN(n) { return n.toLocaleString('ko-KR'); }
+    function fmtF(n) { return n % 1 === 0 ? n.toString() : n.toFixed(2); }
+
+    // ===== 상태 =====
+    let gypThickness = '9.5';
+    let gypAreas = [{w:0, d:0}, {w:0, d:0}];
+    let moldMat = 'pvc';
+    let baseMat = 'pvc';
+    let cabItems = [
+      { type: 'partial', qty: 0 },
+    ];
+
+    const CAB_TYPES = {
+      partial: { label: '부분 절단 재설치', poomId: 'cab-partial', unit: 'm',   matPerUnit: 20000 },
+      rebuild: { label: '전체 해체 재설치', poomId: 'cab-rebuild', unit: '개소', matPerUnit: 30000 },
+      door:    { label: '문짝 교체',       poomId: 'cab-door',    unit: '개소', matPerUnit: 0 },
+      hinge:   { label: '경첩·레일 교체',  poomId: 'cab-hinge',   unit: '개소', matPerUnit: 0 },
+    };
+
+    // ===== 섹션 토글 =====
+    function toggleSection(id) {
+      const sec = document.getElementById('sec-' + id);
+      const chk = document.getElementById('chk-' + id);
+      if (chk.checked) sec.classList.add('active');
+      else sec.classList.remove('active');
+      recalcSummary();
+    }
+
+    // 조명 입력 토글
+    document.getElementById('cond-light').addEventListener('change', function() {
+      document.getElementById('light-input').style.display = this.checked ? 'block' : 'none';
+    });
+
+    // ===== 석고보드 영역 =====
+    function renderGypAreas() {
+      document.getElementById('gyp-areas').innerHTML = gypAreas.map((a, i) => {
+        const sqm = a.w * a.d;
+        return `<div class="work-dims">
+          <span class="dim-label" style="min-width:16px; color:var(--gray-400); font-size:0.8125rem;">${i+1}</span>
+          <input class="dim-input" type="text" inputmode="decimal" value="${a.w}"
+            onfocus="this.select()" onchange="gypAreas[${i}].w=parseFloat(this.value)||0; renderGypAreas();">
+          <span class="dim-x">&times;</span>
+          <input class="dim-input" type="text" inputmode="decimal" value="${a.d}"
+            onfocus="this.select()" onchange="gypAreas[${i}].d=parseFloat(this.value)||0; renderGypAreas();">
+          <span class="dim-label">m</span>
+          <span style="font-size:0.8125rem; color:var(--gray-400);">= ${sqm > 0 ? fmtF(sqm)+'㎡' : ''}</span>
+          ${gypAreas.length > 1 ? '<button class="del-btn" onclick="removeGypArea('+i+')">&times;</button>' : ''}
+        </div>`;
+      }).join('');
+      recalcSummary();
+    }
+    function addGypArea() {
+      if (gypAreas.length >= 6) return;
+      gypAreas.push({w:0, d:0});
+      renderGypAreas();
+    }
+    function removeGypArea(i) {
+      if (gypAreas.length <= 1) return;
+      gypAreas.splice(i, 1);
+      renderGypAreas();
+    }
+
+    // ===== 몰딩/걸레받이 자재 선택 =====
+    function renderMoldMat(el) {
+      el.parentElement.querySelectorAll('.wp-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      recalcSummary();
+    }
+    function renderBaseMat(el) {
+      el.parentElement.querySelectorAll('.wp-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      recalcSummary();
+    }
+
+    // ===== 상 수리 항목 =====
+    function renderCabItems() {
+      document.getElementById('cab-items').innerHTML = cabItems.map((c, i) => {
+        const info = CAB_TYPES[c.type];
+        const poom = UNIT_PRICES.productivity.find(p => p.id === info.poomId).value;
+        return `<div style="display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid var(--gray-100);">
+          <select style="padding:8px 10px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:0.875rem; font-weight:600; color:var(--gray-700);"
+            onchange="cabItems[${i}].type=this.value; renderCabItems();">
+            ${Object.keys(CAB_TYPES).map(k => '<option value="'+k+'" '+(c.type===k?'selected':'')+'>'+CAB_TYPES[k].label+'</option>').join('')}
+          </select>
+          <input class="work-input" type="text" inputmode="numeric" value="${c.qty}" style="width:56px;"
+            onfocus="this.select()" oninput="cabItems[${i}].qty=parseInt(this.value)||0; recalcSummary();">
+          <span class="work-unit">${info.unit}</span>
+          <span style="font-size:0.75rem; color:var(--gray-400);">목공 ${poom}품/${info.unit}</span>
+          ${cabItems.length > 1 ? '<button class="del-btn" onclick="removeCabItem('+i+')">&times;</button>' : ''}
+        </div>`;
+      }).join('');
+      recalcSummary();
+    }
+    function addCabItem() {
+      cabItems.push({ type: 'hinge', qty: 0 });
+      renderCabItems();
+    }
+    function removeCabItem(i) {
+      if (cabItems.length <= 1) return;
+      cabItems.splice(i, 1);
+      renderCabItems();
+    }
+
+    // ===== 합계 미리보기 + 조건별 실시간 금액 =====
+    function recalcSummary() {
+      const laborGen = UNIT_PRICES.labor.find(l=>l.id==='general').price;
+      const laborCarp = UNIT_PRICES.labor.find(l=>l.id==='carpenter').price;
+      const laborElec = UNIT_PRICES.labor.find(l=>l.id==='electric').price;
+      const gypSqm = gypAreas.reduce((s, a) => s + a.w * a.d, 0);
+      const protectArea = Math.max(gypSqm, 10);
+
+      let lines = [];
+
+      // 석고보드
+      if (document.getElementById('chk-gyp').checked) {
+        if (gypSqm > 0) lines.push({ label: '석고보드 교체', value: fmtF(gypSqm) + '㎡' });
+      }
+      // 몰딩
+      if (document.getElementById('chk-mold').checked) {
+        const len = parseFloat(document.getElementById('mold-length').value) || 0;
+        if (len > 0) lines.push({ label: '상부 몰딩', value: fmtF(len) + 'm' });
+        const poom = len * 0.06;
+        document.getElementById('mold-result').textContent = len > 0 ? '목공 ' + fmtF(poom) + '품' : '';
+      }
+      // 걸레받이
+      if (document.getElementById('chk-base').checked) {
+        const len = parseFloat(document.getElementById('base-length').value) || 0;
+        if (len > 0) lines.push({ label: '걸레받이', value: fmtF(len) + 'm' });
+        const poom = len * 0.045;
+        document.getElementById('base-result').textContent = len > 0 ? '목공 ' + fmtF(poom) + '품' : '';
+      }
+      // 상 수리
+      if (document.getElementById('chk-cab').checked) {
+        let cabQtySum = 0;
+        cabItems.forEach(c => { if (c.type === 'partial') cabQtySum += c.qty; else cabQtySum += c.qty; });
+        if (cabQtySum > 0) lines.push({ label: '상 수리', value: cabQtySum + '건' });
+      }
+
+      document.getElementById('area-summary').innerHTML = `
+        <div class="area-summary-title">시공 항목 요약</div>
+        ${lines.length > 0 ? lines.map(l => '<div class="area-row"><span class="area-label">'+l.label+'</span><span class="area-value">'+l.value+'</span></div>').join('') : '<div style="font-size:0.875rem; color:var(--gray-400);">체크한 항목이 없습니다</div>'}
+      `;
+
+      // ===== 현장조건 실시간 금액 =====
+      const protectPoomRate = UNIT_PRICES.productivity.find(p=>p.id==='protect-floor').value;
+      const protectMatRate = UNIT_PRICES.productivity.find(p=>p.id==='protect-mat').value;
+      const moldTreatRate = UNIT_PRICES.productivity.find(p=>p.id==='mold-treat-work').value;
+
+      // 보양
+      const protectPoom = Math.round(protectArea * protectPoomRate * 10) / 10;
+      const protectMat = Math.round(protectArea * protectMatRate);
+      const protectTotal = Math.round(protectPoom * laborGen) + protectMat;
+      document.getElementById('cost-protect').textContent = document.getElementById('cond-protect').checked ? fmtN(protectTotal) + '원' : '';
+
+      // 분진 차단막
+      const dustTotal = Math.round(0.3 * laborGen) + 35000;
+      document.getElementById('cost-dust').textContent = document.getElementById('cond-dust').checked ? fmtN(dustTotal) + '원' : '';
+
+      // 가구 이동
+      const obstacleTotal = Math.round(1.0 * laborGen);
+      document.getElementById('cost-obstacle').textContent = document.getElementById('cond-obstacle').checked ? fmtN(obstacleTotal) + '원' : '';
+
+      // 곰팡이 방지
+      const moldPoom = gypSqm > 0 ? Math.round(gypSqm * moldTreatRate * 10) / 10 : 0.3;
+      const moldTotal = Math.round(moldPoom * laborGen) + 80000;
+      document.getElementById('cost-mold').textContent = document.getElementById('cond-mold').checked ? fmtN(moldTotal) + '원' : '';
+
+      // 하지 건조
+      const dryTotal = Math.round(0.5 * laborGen);
+      document.getElementById('cost-dry').textContent = document.getElementById('cond-dry').checked ? fmtN(dryTotal) + '원' : '';
+
+      // 조명
+      const lightQty = parseInt(document.getElementById('light-qty').value) || 0;
+      const lightTotal = Math.round(lightQty * 0.6 * laborElec);
+      document.getElementById('cost-light').textContent = document.getElementById('cond-light').checked && lightQty > 0 ? fmtN(lightTotal) + '원' : '';
+
+      // 코킹
+      const caulkLen = gypSqm > 0 ? Math.round(Math.sqrt(gypSqm) * 4 * 10) / 10 : 0;
+      const caulkPoom = Math.round(caulkLen * 0.02 * 10) / 10;
+      const caulkMatCost = Math.ceil(caulkLen / 3) * 5000;
+      const caulkTotal = Math.round(caulkPoom * laborCarp) + caulkMatCost;
+      document.getElementById('cost-caulk').textContent = document.getElementById('cond-caulk').checked && caulkLen > 0 ? fmtN(caulkTotal) + '원' : '';
+
+      // 폐기물
+      const wasteTotal = Math.round(0.5 * laborGen) + 30000 + 60000;
+      document.getElementById('cost-waste').textContent = document.getElementById('cond-waste').checked ? fmtN(wasteTotal) + '원' : '';
+    }
+
+    // ===== 견적 자동 생성 =====
+    function generateEstimate() {
+      const chkGyp = document.getElementById('chk-gyp').checked;
+      const chkMold = document.getElementById('chk-mold').checked;
+      const chkBase = document.getElementById('chk-base').checked;
+      const chkCab = document.getElementById('chk-cab').checked;
+      if (!chkGyp && !chkMold && !chkBase && !chkCab) {
+        LTI.toast('최소 1개 항목을 선택하세요');
+        return;
+      }
+
+      const hasProtect = document.getElementById('cond-protect').checked;
+      const hasDust = document.getElementById('cond-dust').checked;
+      const hasObstacle = document.getElementById('cond-obstacle').checked;
+      const hasMold = document.getElementById('cond-mold').checked;
+      const hasDry = document.getElementById('cond-dry').checked;
+      const hasLight = document.getElementById('cond-light').checked;
+      const lightQty = hasLight ? (parseInt(document.getElementById('light-qty').value) || 0) : 0;
+      const hasCaulk = document.getElementById('cond-caulk').checked;
+      const hasWaste = document.getElementById('cond-waste').checked;
+
+      const lossRate = 1 + (UNIT_PRICES.productivity.find(p=>p.id==='loss').value / 100);
+      const laborCarp = UNIT_PRICES.labor.find(l=>l.id==='carpenter').price;
+      const laborPlast = UNIT_PRICES.labor.find(l=>l.id==='plasterer').price;
+      const laborGen = UNIT_PRICES.labor.find(l=>l.id==='general').price;
+      const laborElec = UNIT_PRICES.labor.find(l=>l.id==='electric').price;
+
+      let carpPoom = 0, plastPoom = 0, matCost = 0;
+      let details = [];
+
+      // --- 석고보드 ---
+      if (chkGyp) {
+        const sqm = gypAreas.reduce((s, a) => s + a.w * a.d, 0);
+        if (sqm > 0) {
+          const installRate = UNIT_PRICES.productivity.find(p=>p.id==='gyp-install').value;
+          const removeRate = UNIT_PRICES.productivity.find(p=>p.id==='gyp-remove').value;
+          const puttyRate = UNIT_PRICES.productivity.find(p=>p.id==='gyp-putty-work').value;
+          const boardUsage = UNIT_PRICES.productivity.find(p=>p.id==='gyp-board-usage').value;
+          const screwUsage = UNIT_PRICES.productivity.find(p=>p.id==='gyp-screw-usage').value;
+
+          const installP = Math.round(sqm / installRate * 10) / 10;
+          const removeP = Math.round(sqm * removeRate * 10) / 10;
+          const puttyP = Math.round(sqm * puttyRate * 10) / 10;
+          carpPoom += installP + removeP;
+          plastPoom += puttyP;
+
+          const boardId = gypThickness === '9.5' ? 'gyp-board' : 'gyp-board12';
+          const boardPrice = UNIT_PRICES.material.find(m=>m.id===boardId).price;
+          const boardCount = Math.ceil(sqm * boardUsage * lossRate);
+          const screwCount = Math.ceil(sqm * screwUsage * lossRate);
+          const puttyKg = Math.ceil(sqm * 0.5 * lossRate);
+          const tapeM = Math.ceil(sqm * 1.5 * lossRate);
+
+          const bCost = boardCount * boardPrice;
+          const sCost = screwCount * UNIT_PRICES.material.find(m=>m.id==='gyp-screw').price;
+          const pCost = puttyKg * UNIT_PRICES.material.find(m=>m.id==='gyp-putty').price;
+          const tCost = tapeM * UNIT_PRICES.material.find(m=>m.id==='gyp-tape').price;
+          const subCost = UNIT_PRICES.material.find(m=>m.id==='gyp-sub').price;
+          matCost += bCost + sCost + pCost + tCost + subCost;
+
+          details.push('석고보드 ' + fmtF(sqm) + '㎡: 목공 설치 ' + installP + '품 + 해체 ' + removeP + '품, 미장 퍼티 ' + puttyP + '품, 자재 ' + fmtN(bCost+sCost+pCost+tCost+subCost) + '원');
+        }
+      }
+
+      // --- 몰딩 ---
+      if (chkMold) {
+        const len = parseFloat(document.getElementById('mold-length').value) || 0;
+        if (len > 0) {
+          const removeP = Math.round(len * UNIT_PRICES.productivity.find(p=>p.id==='mold-remove').value * 10) / 10;
+          const installP = Math.round(len * UNIT_PRICES.productivity.find(p=>p.id==='mold-install').value * 10) / 10;
+          carpPoom += removeP + installP;
+
+          const matId = 'mold-' + moldMat;
+          const matPrice = UNIT_PRICES.material.find(m=>m.id===matId).price;
+          const mCost = Math.ceil(len * lossRate) * matPrice;
+          matCost += mCost;
+
+          details.push('몰딩 ' + fmtF(len) + 'm: 목공 해체 ' + removeP + '품 + 설치 ' + installP + '품, 자재(' + moldMat.toUpperCase() + ') ' + fmtN(mCost) + '원');
+        }
+      }
+
+      // --- 걸레받이 ---
+      if (chkBase) {
+        const len = parseFloat(document.getElementById('base-length').value) || 0;
+        if (len > 0) {
+          const removeP = Math.round(len * UNIT_PRICES.productivity.find(p=>p.id==='base-remove').value * 100) / 100;
+          const installP = Math.round(len * UNIT_PRICES.productivity.find(p=>p.id==='base-install').value * 10) / 10;
+          carpPoom += removeP + installP;
+
+          const matId = 'base-' + baseMat;
+          const matPrice = UNIT_PRICES.material.find(m=>m.id===matId).price;
+          const mCost = Math.ceil(len * lossRate) * matPrice;
+          matCost += mCost;
+
+          details.push('걸레받이 ' + fmtF(len) + 'm: 목공 해체 ' + removeP + '품 + 설치 ' + installP + '품, 자재(' + baseMat.toUpperCase() + ') ' + fmtN(mCost) + '원');
+        }
+      }
+
+      // --- 상 수리 ---
+      if (chkCab) {
+        cabItems.forEach(c => {
+          if (c.qty > 0) {
+            const info = CAB_TYPES[c.type];
+            const poom = UNIT_PRICES.productivity.find(p=>p.id===info.poomId).value;
+            const itemPoom = Math.round(c.qty * poom * 10) / 10;
+            carpPoom += itemPoom;
+
+            // 자재비 — 유형별
+            let itemMat = 0;
+            if (c.type === 'partial') {
+              // 부분 절단 재설치: 패널 + 부자재 (m당)
+              const panelPrice = UNIT_PRICES.material.find(m=>m.id==='cab-panel').price;
+              const subPrice = UNIT_PRICES.material.find(m=>m.id==='cab-sub').price;
+              itemMat = Math.round(c.qty * (panelPrice + subPrice) * lossRate);
+            } else if (c.type === 'rebuild') {
+              itemMat = c.qty * info.matPerUnit; // 전체 해체 재설치 부자재
+            } else if (c.type === 'door') {
+              itemMat = c.qty * UNIT_PRICES.material.find(m=>m.id==='cab-door-mat').price;
+            } else if (c.type === 'hinge') {
+              itemMat = c.qty * 2 * UNIT_PRICES.material.find(m=>m.id==='cab-hinge-mat').price;
+            }
+            matCost += itemMat;
+
+            details.push(info.label + ' ' + c.qty + info.unit + ': 목공 ' + itemPoom + '품 (' + poom + '품/' + info.unit + '), 자재 ' + fmtN(itemMat) + '원');
+          }
+        });
+      }
+
+      carpPoom = Math.round(carpPoom * 10) / 10;
+      plastPoom = Math.round(plastPoom * 10) / 10;
+      const carpLabor = Math.round(carpPoom * laborCarp);
+      const plastLabor = Math.round(plastPoom * laborPlast);
+
+      // 코킹 (목공 추가 품수)
+      const gypSqm = chkGyp ? gypAreas.reduce((s, a) => s + a.w * a.d, 0) : 0;
+      const caulkLength = gypSqm > 0 ? Math.round(Math.sqrt(gypSqm) * 4 * 10) / 10 : 0; // 이음새 추정
+      if (hasCaulk && caulkLength > 0) {
+        const caulkPoom = Math.round(caulkLength * UNIT_PRICES.productivity.find(p=>p.id==='caulk-work').value * 10) / 10;
+        carpPoom += caulkPoom;
+        matCost += Math.ceil(caulkLength / 3) * UNIT_PRICES.material.find(m=>m.id==='caulk-silicon').price; // 3m당 1개
+        details.push('코킹 마감 ' + fmtF(caulkLength) + 'm: 목공 ' + caulkPoom + '품');
+      }
+
+      carpPoom = Math.round(carpPoom * 10) / 10;
+      plastPoom = Math.round(plastPoom * 10) / 10;
+      const carpLabor2 = Math.round(carpPoom * laborCarp); // 재계산
+
+      // 전기공
+      let elecPoom = 0;
+      if (hasLight && lightQty > 0) {
+        elecPoom = Math.round(lightQty * 0.6 * 10) / 10; // 분리0.3 + 설치0.3
+      }
+      const elecLabor = Math.round(elecPoom * laborElec);
+
+      // 보통인부
+      const protectPoomRate = UNIT_PRICES.productivity.find(p=>p.id==='protect-floor').value;
+      const protectMatRate = UNIT_PRICES.productivity.find(p=>p.id==='protect-mat').value;
+      const furnitureMovePoom = UNIT_PRICES.productivity.find(p=>p.id==='furniture-move').value;
+      const moldTreatRate = UNIT_PRICES.productivity.find(p=>p.id==='mold-treat-work').value;
+      let protectArea = Math.max(gypSqm, 10);
+      let protectPoom = hasProtect ? Math.round(protectArea * protectPoomRate * 10) / 10 : 0;
+      let protectMatCost = hasProtect ? Math.round(protectArea * protectMatRate) : 0;
+      let genPoom = 0;
+      let genMatCost = protectMatCost;
+      if (hasProtect) genPoom += protectPoom;
+      if (hasDust) { genPoom += 0.3; genMatCost += UNIT_PRICES.material.find(m=>m.id==='dust-sheet').price; }
+      if (hasObstacle) genPoom += furnitureMovePoom;
+      if (hasMold) {
+        const moldPoom = gypSqm > 0 ? Math.round(gypSqm * moldTreatRate * 10) / 10 : 0.3;
+        genPoom += moldPoom;
+        genMatCost += UNIT_PRICES.material.find(m=>m.id==='mold-treat').price;
+      }
+      if (hasDry) genPoom += 0.5;
+      if (hasWaste) genPoom += 0.5;
+      genPoom = Math.round(genPoom * 10) / 10;
+      let genLabor = Math.round(genPoom * laborGen) + genMatCost;
+
+      // 기타
+      let etcCost = 0;
+      if (hasWaste) {
+        etcCost += UNIT_PRICES.etc.find(e=>e.id==='waste-sticker').price;
+        etcCost += UNIT_PRICES.etc.find(e=>e.id==='waste-transport').price;
+      }
+
+      let supply = carpLabor2 + plastLabor + elecLabor + matCost + genLabor + etcCost;
+      let vat = Math.round(supply * 0.1);
+      let total = supply + vat;
+
+      const summary = `
+        <div style="text-align:left; font-size:0.9375rem; line-height:1.8;">
+          <strong>목공 작업</strong><br>
+          &nbsp; ${carpPoom}품 × @${fmtN(laborCarp)}원 = <strong>${fmtN(carpLabor2)}원</strong><br>
+          <span style="font-size:0.8125rem; color:#888;">
+          ${details.map(d => '&nbsp; · ' + d).join('<br>')}
+          </span><br><br>
+          ${plastPoom > 0 ? '<strong>미장공 작업</strong> (퍼티·줄눈)<br>&nbsp; ' + plastPoom + '품 × @' + fmtN(laborPlast) + '원 = <strong>' + fmtN(plastLabor) + '원</strong><br><br>' : ''}
+          ${elecPoom > 0 ? '<strong>전기공 작업</strong> (조명 분리/재설치)<br>&nbsp; ' + elecPoom + '품 × @' + fmtN(laborElec) + '원 = <strong>' + fmtN(elecLabor) + '원</strong> (' + lightQty + '개소)<br><br>' : ''}
+          <strong>자재비 합계</strong>: <strong>${fmtN(matCost)}원</strong><br><br>
+          <strong>보통인부</strong><br>
+          &nbsp; ${genPoom}품 × @${fmtN(laborGen)}원 = <strong>${fmtN(Math.round(genPoom*laborGen))}원</strong><br>
+          <span style="font-size:0.8125rem; color:#888;">
+          &nbsp; ${hasProtect ? '보양 ' + protectPoom + '품' : ''}${hasDust ? ' + 분진차단 0.3품' : ''}${hasObstacle ? ' + 가구이동 1.0품' : ''}${hasMold ? ' + 곰팡이방지' : ''}${hasDry ? ' + 건조확인 0.5품' : ''}${hasWaste ? ' + 폐기물 0.5품' : ''}
+          </span><br>
+          &nbsp; 자재·약품: ${fmtN(genMatCost)}원<br>
+          &nbsp; 소계: <strong>${fmtN(genLabor)}원</strong><br><br>
+          ${etcCost > 0 ? '<strong>기타</strong> (폐기물 스티커+운반): <strong>' + fmtN(etcCost) + '원</strong><br><br>' : ''}
+          <div style="border-top:1.5px solid #e8e8e0; padding-top:8px; margin-top:4px;">
+            공급가액: ${fmtN(supply)}원<br>
+            부가세: ${fmtN(vat)}원<br>
+            <span style="font-size:1.125rem; color:#c8871e;"><strong>총합계: ${fmtN(total)}원</strong></span>
+          </div>
+        </div>
+      `;
+
+      LTI.confirm({
+        title: '목공 견적 자동 생성 결과',
+        message: summary,
+        confirmText: '확인',
+        cancelText: '수정하기',
+        onConfirm: function() { LTI.toast('견적서가 생성되었습니다'); }
+      });
+    }
+
+    // 초기 렌더링
+    renderGypAreas();
+    renderCabItems();
+    recalcSummary();
+  </script>
+</body>
+</html>

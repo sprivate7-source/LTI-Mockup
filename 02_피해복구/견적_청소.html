@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — 견적 (청소)</title>
+  <link rel="stylesheet" href="../common/style.css">
+  <link rel="stylesheet" href="../common/tab-bar.css">
+  <style>
+    .work-section { background:white; border:1.5px solid var(--gray-200); border-radius:14px; margin-bottom:14px; overflow:hidden; }
+    .work-section.active { border-color:var(--primary); }
+    .work-header { display:flex; align-items:center; padding:16px; gap:10px; }
+    .work-check { width:24px; height:24px; accent-color:var(--primary); flex-shrink:0; }
+    .work-title { flex:1; font-size:1.0625rem; font-weight:700; color:var(--gray-800); }
+    .work-ref { font-size:0.6875rem; color:var(--gray-400); white-space:nowrap; }
+    .work-body { padding:0 16px 16px; display:none; }
+    .work-section.active .work-body { display:block; }
+    .work-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+    .work-label { font-size:0.875rem; color:var(--gray-500); min-width:70px; }
+    .work-input { width:72px; text-align:center; padding:10px 6px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:1rem; font-weight:600; color:var(--gray-800); }
+    .work-input:focus { border-color:var(--primary); outline:none; }
+    .work-unit { font-size:0.875rem; color:var(--gray-500); }
+    .sub-info { font-size:0.75rem; color:var(--gray-400); margin-top:4px; padding-left:4px; line-height:1.6; }
+    .area-summary { background:white; border:1.5px solid var(--gray-200); border-radius:14px; padding:16px; margin-bottom:16px; }
+    .area-summary-title { font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:10px; }
+    .area-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; }
+    .area-label { font-size:0.9375rem; color:var(--gray-600); }
+    .area-value { font-size:0.9375rem; font-weight:700; color:var(--gray-800); }
+    .area-value.primary { color:var(--primary); font-size:1.125rem; }
+    .cond-cost { font-size:0.8125rem; font-weight:700; color:var(--primary); white-space:nowrap; min-width:70px; text-align:right; }
+    .price-link { display:flex; align-items:center; gap:8px; padding:12px 16px; background:var(--info-bg); border-radius:10px; margin-bottom:16px; text-decoration:none; color:var(--info); font-size:0.875rem; font-weight:600; }
+    .area-input-section { background:white; border:1.5px solid var(--primary); border-radius:14px; padding:16px; margin-bottom:16px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="../01_현장상세.html" class="header-back" aria-label="뒤로가기">&#8249;</a>
+    <div class="header-title">아랫집 피해복구</div>
+    <div class="header-action"></div>
+  </div>
+
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="sub-tab-bar" id="sub-tab-bar"></div>
+
+  <div class="page-tab">
+
+    <a href="견적_단가설정.html" class="price-link">
+      <span>&#9881;</span>
+      <span>기준단가 설정 (2026년 상반기 적용중)</span>
+      <span style="margin-left:auto; font-size:1.25rem;">&#8250;</span>
+    </a>
+
+    <!-- 시공 면적 입력 -->
+    <div class="area-input-section">
+      <div style="font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:12px;">청소 대상 면적</div>
+      <div class="work-row">
+        <span class="work-label">전용면적</span>
+        <input class="work-input" type="text" inputmode="decimal" id="clean-area" value="0" style="width:80px;"
+          onfocus="this.select()" oninput="recalc()">
+        <span class="work-unit">㎡</span>
+        <span style="font-size:0.8125rem; color:var(--gray-400);" id="area-pyeong"></span>
+      </div>
+      <div class="sub-info">전용면적 기준 — 등기부등본 또는 실측 면적 입력. 모든 청소 품수가 면적 기반으로 자동 산출됩니다.</div>
+    </div>
+
+    <!-- 청소 항목들 -->
+    <div class="work-section" id="sec-bigclean">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-bigclean" onchange="toggle('bigclean')">
+        <div style="flex:1;">
+          <div class="work-title">1차 대청소 (분진 제거)</div>
+          <div class="work-ref">보통인부 0.012품/㎡</div>
+        </div>
+        <span class="cond-cost" id="cost-bigclean"></span>
+      </div>
+      <div class="work-body">
+        <div class="sub-info">공사 후 분진·가루 전체 제거 | 세정제 포함</div>
+      </div>
+    </div>
+
+    <div class="work-section" id="sec-floor">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-floor" onchange="toggle('floor')">
+        <div style="flex:1;">
+          <div class="work-title">바닥 세척</div>
+          <div class="work-ref">보통인부 0.006품/㎡</div>
+        </div>
+        <span class="cond-cost" id="cost-floor"></span>
+      </div>
+      <div class="work-body">
+        <div class="sub-info">잔여 접착제·시멘트·분진 세척 | 세정제 포함</div>
+      </div>
+    </div>
+
+    <div class="work-section" id="sec-glass">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-glass" onchange="toggle('glass')">
+        <div style="flex:1;">
+          <div class="work-title">유리창 청소</div>
+          <div class="work-ref">보통인부 0.004품/㎡</div>
+        </div>
+        <span class="cond-cost" id="cost-glass"></span>
+      </div>
+      <div class="work-body">
+        <div class="sub-info">창문·샤시 분진 제거 | 세정제 포함</div>
+      </div>
+    </div>
+
+    <div class="work-section" id="sec-bathroom">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-bathroom" onchange="toggle('bathroom')">
+        <div style="flex:1;">
+          <div class="work-title">화장실 청소</div>
+          <div class="work-ref">보통인부 0.3품/개소</div>
+        </div>
+        <span class="cond-cost" id="cost-bathroom"></span>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">화장실 수</span>
+          <input class="work-input" type="text" inputmode="numeric" id="bathroom-qty" value="1" style="width:56px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">개소</span>
+        </div>
+        <div class="sub-info">위생도기·타일 세척 | 전용 세정제 포함</div>
+      </div>
+    </div>
+
+    <div class="work-section" id="sec-kitchen">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-kitchen" onchange="toggle('kitchen')">
+        <div style="flex:1;">
+          <div class="work-title">주방 청소</div>
+          <div class="work-ref">보통인부 0.3품/개소</div>
+        </div>
+        <span class="cond-cost" id="cost-kitchen"></span>
+      </div>
+      <div class="work-body">
+        <div class="sub-info">싱크대·후드 세척 | 세정제 포함</div>
+      </div>
+    </div>
+
+    <div class="work-section" id="sec-aircon">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-aircon" onchange="toggle('aircon')">
+        <div style="flex:1;">
+          <div class="work-title">에어컨 필터 세척</div>
+          <div class="work-ref">보통인부 0.1품/대</div>
+        </div>
+        <span class="cond-cost" id="cost-aircon"></span>
+      </div>
+      <div class="work-body">
+        <div class="work-row">
+          <span class="work-label">수량</span>
+          <input class="work-input" type="text" inputmode="numeric" id="aircon-qty" value="1" style="width:56px;"
+            onfocus="this.select()" oninput="recalc()">
+          <span class="work-unit">대</span>
+        </div>
+        <div class="sub-info">분진 유입 필터 세척</div>
+      </div>
+    </div>
+
+    <div class="work-section" id="sec-disinfect">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-disinfect" onchange="toggle('disinfect')">
+        <div style="flex:1;">
+          <div class="work-title">살균 소독</div>
+          <div class="work-ref">보통인부 0.003품/㎡</div>
+        </div>
+        <span class="cond-cost" id="cost-disinfect"></span>
+      </div>
+      <div class="work-body">
+        <div class="sub-info">곰팡이·세균 방지 약품 도포 | 소독약품 포함</div>
+      </div>
+    </div>
+
+    <div class="work-section" id="sec-final">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-final" onchange="toggle('final')">
+        <div style="flex:1;">
+          <div class="work-title">2차 마무리 청소</div>
+          <div class="work-ref">보통인부 0.006품/㎡</div>
+        </div>
+        <span class="cond-cost" id="cost-final"></span>
+      </div>
+      <div class="work-body">
+        <div class="sub-info">입주 전 최종 점검·정리</div>
+      </div>
+    </div>
+
+    <div class="work-section" id="sec-waste">
+      <div class="work-header">
+        <input class="work-check" type="checkbox" id="chk-waste" onchange="toggle('waste')">
+        <div style="flex:1;">
+          <div class="work-title">폐기물 최종 반출</div>
+          <div class="work-ref">보통인부 0.3품 + 스티커</div>
+        </div>
+        <span class="cond-cost" id="cost-waste"></span>
+      </div>
+      <div class="work-body">
+        <div class="sub-info">잔여 쓰레기 수거·반출 | 폐기물 스티커 포함</div>
+      </div>
+    </div>
+
+    <!-- 합계 -->
+    <div class="area-summary" id="area-summary"></div>
+
+    <button class="btn btn-primary btn-full btn-lg mt-20" onclick="generateEstimate()">
+      견적 자동 생성
+    </button>
+
+    <div style="height:32px;"></div>
+  </div>
+
+  <script src="../common/trades/unit-prices.js"></script>
+  <script src="../common/components.js"></script>
+  <script src="../common/tab-bar.js"></script>
+  <script>
+    renderTabBar('estimate', '청소');
+
+    LTI.renderFeaturePanel({
+      target: '.page-tab',
+      features: [
+        { text: '★ 전용면적 입력 → 모든 청소 품수 면적 기반 자동 산출 (㎡ + 평 표시)' },
+        { text: '1차 대청소 — 0.012품/㎡ (분진 제거) + 세정제' },
+        { text: '바닥 세척 — 0.006품/㎡ + 세정제' },
+        { text: '유리창 청소 — 0.004품/㎡ + 세정제' },
+        { text: '화장실·주방 — 개소 기반 (0.3품/개소) + 수량 입력' },
+        { text: '에어컨 필터 — 수량 기반 (0.1품/대)' },
+        { text: '살균 소독 — 면적 기반 (0.003품/㎡) + 소독약품 (물가정보)' },
+        { text: '2차 마무리 청소 — 0.006품/㎡ (입주 전 최종 정리)' },
+        { text: '폐기물 최종 반출 — 0.3품 + 폐기물 스티커 (물가정보)' },
+        { text: '기준단가 설정 링크 — 자재비 unit-prices.js 참조 (물가정보 근거)' },
+        { text: '모든 항목 실시간 금액 표시 — 체크 시 우측에 원 단위 비용 즉시 표시' },
+        { text: '견적 자동 생성 → 보통인부 품수 합산 + 자재비 + 공급가액 + VAT = 총합계' },
+      ],
+    });
+
+    function fmtN(n) { return n.toLocaleString('ko-KR'); }
+    function fmtF(n) { return n % 1 === 0 ? n.toString() : n.toFixed(2); }
+
+    function toggle(id) {
+      const sec = document.getElementById('sec-' + id);
+      const chk = document.getElementById('chk-' + id);
+      if (chk.checked) sec.classList.add('active');
+      else sec.classList.remove('active');
+      recalc();
+    }
+
+    // 품셈 정의 — 자재비는 unit-prices.js 참조
+    var detergent = UNIT_PRICES.material.find(m=>m.id==='cl-detergent').price;  // 15,000
+    var disinfectMat = UNIT_PRICES.material.find(m=>m.id==='cl-disinfect').price; // 30,000
+    var wasteSticker = UNIT_PRICES.etc.find(e=>e.id==='waste-sticker').price;   // 30,000
+
+    var ITEMS = [
+      { id: 'bigclean',  label: '1차 대청소 (분진 제거)', rate: 0.012, unit: '㎡', matCost: detergent, matLabel: '세정제 (물가정보)' },
+      { id: 'floor',     label: '바닥 세척',              rate: 0.006, unit: '㎡', matCost: Math.round(detergent * 0.3), matLabel: '세정제 (물가정보)' },
+      { id: 'glass',     label: '유리창 청소',            rate: 0.004, unit: '㎡', matCost: Math.round(detergent * 0.3), matLabel: '세정제 (물가정보)' },
+      { id: 'bathroom',  label: '화장실 청소',            rate: 0.3,   unit: '개소', qtyInput: 'bathroom-qty', matCost: detergent, matLabel: '전용 세정제 (물가정보)' },
+      { id: 'kitchen',   label: '주방 청소',              rate: 0.3,   unit: '개소', qty: 1, matCost: Math.round(detergent * 0.3), matLabel: '세정제 (물가정보)' },
+      { id: 'aircon',    label: '에어컨 필터 세척',       rate: 0.1,   unit: '대', qtyInput: 'aircon-qty', matCost: 0 },
+      { id: 'disinfect', label: '살균 소독',              rate: 0.003, unit: '㎡', matCost: disinfectMat, matLabel: '살균소독 약품 (물가정보)' },
+      { id: 'final',     label: '2차 마무리 청소',        rate: 0.006, unit: '㎡', matCost: 0 },
+      { id: 'waste',     label: '폐기물 최종 반출',       rate: 0,     unit: '식', fixedPoom: 0.3, matCost: wasteSticker, matLabel: '폐기물 스티커 (물가정보)' },
+    ];
+
+    function getItemPoom(item) {
+      var area = parseFloat(document.getElementById('clean-area').value) || 0;
+      if (item.fixedPoom) return item.fixedPoom;
+      if (item.unit === '㎡') return Math.round(area * item.rate * 100) / 100;
+      if (item.qtyInput) {
+        var qty = parseInt(document.getElementById(item.qtyInput).value) || 0;
+        return Math.round(qty * item.rate * 10) / 10;
+      }
+      if (item.qty) return Math.round(item.qty * item.rate * 10) / 10;
+      return 0;
+    }
+
+    function recalc() {
+      var general = UNIT_PRICES.labor.find(function(l){ return l.id === 'general'; }).price;
+      var area = parseFloat(document.getElementById('clean-area').value) || 0;
+
+      // 평수 표시
+      document.getElementById('area-pyeong').textContent = area > 0 ? '(' + fmtF(area / 3.3058) + '평)' : '';
+
+      var lines = [];
+
+      ITEMS.forEach(function(item) {
+        var chk = document.getElementById('chk-' + item.id);
+        var costEl = document.getElementById('cost-' + item.id);
+        if (chk.checked) {
+          var poom = getItemPoom(item);
+          var cost = Math.round(poom * general) + item.matCost;
+          costEl.textContent = cost > 0 ? fmtN(cost) + '원' : '';
+
+          var desc = item.label;
+          if (item.unit === '㎡' && area > 0) desc += ' (' + fmtF(poom) + '품)';
+          else if (item.qtyInput) desc += ' (' + (parseInt(document.getElementById(item.qtyInput).value)||0) + item.unit + ')';
+          lines.push({ label: desc, value: cost > 0 ? fmtN(cost) + '원' : '' });
+        } else {
+          costEl.textContent = '';
+        }
+      });
+
+      document.getElementById('area-summary').innerHTML =
+        '<div class="area-summary-title">청소 항목 요약</div>' +
+        (lines.length > 0
+          ? lines.map(function(l){ return '<div class="area-row"><span class="area-label">'+l.label+'</span><span class="area-value">'+l.value+'</span></div>'; }).join('')
+          : '<div style="font-size:0.875rem; color:var(--gray-400);">체크한 항목이 없습니다</div>');
+    }
+
+    // ===== 견적 자동 생성 =====
+    function generateEstimate() {
+      var anyChecked = ITEMS.some(function(item){ return document.getElementById('chk-' + item.id).checked; });
+      if (!anyChecked) { LTI.toast('최소 1개 항목을 선택하세요'); return; }
+
+      var area = parseFloat(document.getElementById('clean-area').value) || 0;
+      var general = UNIT_PRICES.labor.find(function(l){ return l.id === 'general'; }).price;
+      var totalPoom = 0;
+      var totalMat = 0;
+      var details = [];
+
+      ITEMS.forEach(function(item) {
+        if (!document.getElementById('chk-' + item.id).checked) return;
+
+        var poom = getItemPoom(item);
+        totalPoom += poom;
+        totalMat += item.matCost;
+
+        var detail = item.label + ': 보통인부 ' + fmtF(poom) + '품';
+        if (item.unit === '㎡' && area > 0) detail += ' (' + fmtF(area) + '㎡ × ' + item.rate + '품/㎡)';
+        else if (item.qtyInput) detail += ' (' + (parseInt(document.getElementById(item.qtyInput).value)||0) + item.unit + ' × ' + item.rate + '품/' + item.unit + ')';
+        else if (item.fixedPoom) detail += ' (고정)';
+        if (item.matCost > 0) detail += ', ' + item.matLabel + ' ' + fmtN(item.matCost) + '원';
+        details.push(detail);
+      });
+
+      totalPoom = Math.round(totalPoom * 10) / 10;
+      var laborCost = Math.round(totalPoom * general);
+      var supply = laborCost + totalMat;
+      var vat = Math.round(supply * 0.1);
+      var total = supply + vat;
+
+      var summary =
+        '<div style="text-align:left; font-size:0.9375rem; line-height:1.8;">' +
+          '<strong>보통인부 작업</strong><br>' +
+          '&nbsp; ' + totalPoom + '품 × @' + fmtN(general) + '원 = <strong>' + fmtN(laborCost) + '원</strong><br>' +
+          '<span style="font-size:0.8125rem; color:#888;">' +
+          '&nbsp; 청소 대상 면적: ' + fmtF(area) + '㎡ (' + fmtF(area/3.3058) + '평)' +
+          '</span><br><br>' +
+          '<strong>자재비 합계</strong>: <strong>' + fmtN(totalMat) + '원</strong><br>' +
+          '&nbsp; (세정제, 소독약품, 스티커 등)<br><br>' +
+          '<span style="font-size:0.8125rem; color:#888;">' +
+          details.map(function(d){ return '&nbsp; · ' + d; }).join('<br>') +
+          '</span><br><br>' +
+          '<div style="border-top:1.5px solid #e8e8e0; padding-top:8px; margin-top:4px;">' +
+            '공급가액: ' + fmtN(supply) + '원<br>' +
+            '부가세: ' + fmtN(vat) + '원<br>' +
+            '<span style="font-size:1.125rem; color:#c8871e;"><strong>총합계: ' + fmtN(total) + '원</strong></span>' +
+          '</div>' +
+        '</div>';
+
+      LTI.confirm({
+        title: '청소 견적 자동 생성 결과',
+        message: summary,
+        confirmText: '확인',
+        cancelText: '수정하기',
+        onConfirm: function() { LTI.toast('견적서가 생성되었습니다'); }
+      });
+    }
+
+    recalc();
+  </script>
+</body>
+</html>

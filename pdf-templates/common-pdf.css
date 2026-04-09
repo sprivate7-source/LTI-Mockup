@@ -1,0 +1,315 @@
+/* ============================================
+   LTI PDF 양식 공통 스타일
+   A4 용지 기준 (210mm x 297mm)
+   인쇄 및 PDF 변환 최적화
+   ============================================ */
+
+@page {
+  size: A4;
+  margin: 15mm 20mm;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  color: #1a1a1a;
+  background: #e8e8e8;
+  line-height: 1.6;
+  font-size: 11pt;
+}
+
+.pdf-page {
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+  margin: 20px auto;
+  padding: 20mm 22mm;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+@media print {
+  body { background: white; }
+  .pdf-page {
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+  }
+  .no-print { display: none !important; }
+}
+
+/* --- 헤더 --- */
+.pdf-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 3px solid #1a1a1a;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+.pdf-logo {
+  font-size: 14pt;
+  font-weight: 800;
+  color: #c8871e;
+  letter-spacing: 1px;
+}
+.pdf-logo-sub {
+  font-size: 8pt;
+  color: #707068;
+  margin-top: 2px;
+}
+.pdf-doc-title {
+  font-size: 18pt;
+  font-weight: 800;
+  text-align: right;
+  color: #1a1a1a;
+}
+.pdf-doc-no {
+  font-size: 8pt;
+  color: #a0a098;
+  text-align: right;
+  margin-top: 2px;
+}
+
+/* --- 정보 테이블 --- */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 10pt;
+}
+.info-table th,
+.info-table td {
+  border: 1px solid #d0d0c8;
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+.info-table th {
+  background: #f5f5f0;
+  font-weight: 600;
+  color: #505048;
+  width: 25%;
+  white-space: nowrap;
+}
+.info-table td {
+  color: #1a1a1a;
+}
+.info-table .highlight {
+  background: #fdf6e8;
+  font-weight: 600;
+}
+
+/* --- 본문 --- */
+.pdf-body {
+  font-size: 10.5pt;
+  line-height: 1.8;
+  color: #383830;
+  margin-bottom: 20px;
+}
+.pdf-body p {
+  margin-bottom: 10px;
+}
+
+/* --- 조항 목록 --- */
+.clause-list {
+  counter-reset: clause;
+  padding-left: 0;
+  list-style: none;
+  margin-bottom: 20px;
+}
+.clause-list li {
+  counter-increment: clause;
+  padding: 6px 0 6px 28px;
+  position: relative;
+  font-size: 10pt;
+  line-height: 1.7;
+  border-bottom: 1px solid #f0f0e8;
+}
+.clause-list li::before {
+  content: counter(clause) ".";
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+  color: #c8871e;
+}
+
+/* --- 서명 영역 --- */
+.sign-area {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #d0d0c8;
+}
+.sign-date {
+  text-align: center;
+  font-size: 12pt;
+  font-weight: 600;
+  margin-bottom: 30px;
+  color: #383830;
+}
+.sign-row {
+  display: flex;
+  justify-content: space-around;
+  gap: 40px;
+}
+.sign-block {
+  flex: 1;
+  text-align: center;
+}
+.sign-label {
+  font-size: 9pt;
+  color: #707068;
+  margin-bottom: 6px;
+}
+.sign-name {
+  font-size: 12pt;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+.sign-box {
+  width: 140px;
+  height: 60px;
+  border: 1.5px solid #d0d0c8;
+  border-radius: 6px;
+  margin: 8px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: cursive, serif;
+  font-size: 20pt;
+  color: #1a1a1a;
+  background: #fafaf8;
+}
+.sign-box.signed {
+  border-color: #2d8a4e;
+  background: #f0f9f2;
+  color: #2d8a4e;
+}
+
+/* --- 푸터 --- */
+.pdf-footer {
+  position: absolute;
+  bottom: 15mm;
+  left: 22mm;
+  right: 22mm;
+  border-top: 1px solid #e8e8e0;
+  padding-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 7.5pt;
+  color: #a0a098;
+}
+
+/* --- 금액 테이블 --- */
+.amount-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 9.5pt;
+}
+.amount-table th,
+.amount-table td {
+  border: 1px solid #d0d0c8;
+  padding: 6px 10px;
+  text-align: right;
+}
+.amount-table th {
+  background: #f5f5f0;
+  font-weight: 600;
+  color: #505048;
+  text-align: center;
+}
+.amount-table td:first-child {
+  text-align: left;
+}
+.amount-table .group-header {
+  background: #fdf6e8;
+  font-weight: 700;
+  text-align: left;
+  color: #a06c15;
+}
+.amount-table .total-row {
+  background: #1a1a1a;
+  color: white;
+  font-weight: 700;
+  font-size: 11pt;
+}
+.amount-table .subtotal-row {
+  background: #f5f5f0;
+  font-weight: 600;
+}
+
+/* --- 사진 대지 --- */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.photo-cell {
+  border: 1px solid #d0d0c8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.photo-cell-img {
+  width: 100%;
+  height: 120px;
+  background: #f0f0e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8pt;
+  color: #a0a098;
+  position: relative;
+}
+.photo-cell-stamp {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  font-size: 6.5pt;
+  padding: 3px 6px;
+  font-family: monospace;
+}
+.photo-cell-caption {
+  padding: 6px 8px;
+  font-size: 8.5pt;
+  color: #505048;
+  border-top: 1px solid #e8e8e0;
+  min-height: 28px;
+}
+
+/* --- 부동문자 박스 --- */
+.disclaimer-box {
+  background: #f5f5f0;
+  border: 1px solid #d0d0c8;
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 8pt;
+  color: #707068;
+  line-height: 1.6;
+  margin-top: 16px;
+}
+
+/* --- 도장/직인 영역 --- */
+.stamp-area {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #c0392b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9pt;
+  font-weight: 700;
+  color: #c0392b;
+  margin: 0 auto;
+}

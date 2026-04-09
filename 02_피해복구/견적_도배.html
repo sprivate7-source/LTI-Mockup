@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — 현장 조건 입력</title>
+  <link rel="stylesheet" href="../common/style.css">
+  <link rel="stylesheet" href="../common/tab-bar.css">
+  <style>
+    /* --- 방 카드 --- */
+    .room-card {
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .room-card.active {
+      border-color: var(--primary);
+    }
+    .room-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .room-name-input {
+      flex: 1;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      border: none;
+      border-bottom: 1.5px solid var(--gray-200);
+      padding: 4px 0;
+      background: none;
+    }
+    .room-name-input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    .room-delete {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: none;
+      color: var(--gray-300);
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 1.25rem;
+    }
+    .room-delete:active {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+    /* 면적 입력 */
+    .room-dims {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .dim-input {
+      width: 72px;
+      text-align: center;
+      padding: 10px 6px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .dim-input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    .dim-label {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+    }
+    .dim-x {
+      font-size: 1.125rem;
+      color: var(--gray-400);
+      font-weight: 700;
+    }
+    .dim-result {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+    /* 도배 선택 (천장/벽면) */
+    .room-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .room-option-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--gray-50);
+      border-radius: 10px;
+    }
+    .room-option-row.disabled {
+      opacity: 0.4;
+    }
+    .room-option-check {
+      width: 22px;
+      height: 22px;
+      accent-color: var(--primary);
+      flex-shrink: 0;
+    }
+    .room-option-label {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--gray-700);
+      min-width: 60px;
+    }
+    .room-option-area {
+      font-size: 0.8125rem;
+      color: var(--gray-400);
+      min-width: 65px;
+    }
+    .wallpaper-select {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+    }
+    .wp-btn {
+      padding: 6px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      background: white;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      cursor: pointer;
+    }
+    .wp-btn.selected {
+      border-color: var(--primary);
+      background: var(--primary-bg);
+      color: var(--primary);
+    }
+    .wp-btn:active {
+      background: var(--primary-bg);
+    }
+    .wp-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+    /* 방 추가 버튼 */
+    .room-add-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px;
+      border: 2px dashed var(--gray-300);
+      border-radius: 14px;
+      background: none;
+      color: var(--gray-500);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .room-add-btn:active {
+      background: var(--gray-50);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    /* 면적 합계 */
+    .area-summary {
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .area-summary-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 10px;
+    }
+    .area-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+    }
+    .area-label {
+      font-size: 0.9375rem;
+      color: var(--gray-600);
+    }
+    .area-value {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--gray-800);
+    }
+    .area-value.primary {
+      color: var(--primary);
+      font-size: 1.125rem;
+    }
+    .area-detail {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+      margin-top: 2px;
+    }
+    /* 현장 조건 체크 */
+    .condition-section {
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .condition-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 12px;
+    }
+    .condition-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .condition-item:last-child {
+      border-bottom: none;
+    }
+    .condition-check {
+      width: 24px;
+      height: 24px;
+      accent-color: var(--primary);
+    }
+    .condition-label {
+      flex: 1;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+    .condition-desc {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+    }
+    /* 단가 설정 링크 */
+    .price-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--info-bg);
+      border-radius: 10px;
+      margin-bottom: 16px;
+      text-decoration: none;
+      color: var(--info);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .price-link:active {
+      opacity: 0.7;
+    }
+    .price-link-arrow {
+      margin-left: auto;
+      font-size: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <div class="header">
+    <a href="../01_현장상세.html" class="header-back" aria-label="뒤로가기">&#8249;</a>
+    <div class="header-title">아랫집 피해복구</div>
+    <div class="header-action"></div>
+  </div>
+
+  <!-- 탭 바 -->
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="sub-tab-bar" id="sub-tab-bar"></div>
+
+  <!-- 페이지 콘텐츠 -->
+  <div class="page-tab">
+
+    <!-- 기준단가 설정 링크 -->
+    <a href="견적_단가설정.html" class="price-link">
+      <span>&#9881;</span>
+      <span>기준단가 설정 (2026년 상반기 적용중)</span>
+      <span class="price-link-arrow">&#8250;</span>
+    </a>
+
+    <div style="font-size:1rem; font-weight:700; color:var(--gray-800); margin-bottom:14px;">방 구성</div>
+
+    <!-- 방 목록 -->
+    <div id="room-list"></div>
+
+    <!-- 방 추가 -->
+    <button class="room-add-btn" onclick="addRoom()">+ 방 추가</button>
+
+    <!-- 면적 합계 -->
+    <div class="area-summary" id="area-summary"></div>
+
+    <!-- 현장 조건 -->
+    <div class="condition-section">
+      <div class="condition-title">현장 조건</div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-protect" checked onchange="recalc()">
+        <div>
+          <div class="condition-label">바닥·가구 보양</div>
+          <div class="condition-desc">보통인부 — 시공 면적 기반 품수 자동 (표준품셈)</div>
+        </div>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-obstacle" checked onchange="recalc()">
+        <div>
+          <div class="condition-label">가구 이동 (지장물)</div>
+          <div class="condition-desc">보통인부 1.0품 + 시공량 15% 감소 적용</div>
+        </div>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-demolish" checked onchange="recalc()">
+        <div>
+          <div class="condition-label">기존 벽지 철거 필요</div>
+          <div class="condition-desc">도배 해체 품수 산출 (표준품셈)</div>
+        </div>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-primer" checked onchange="recalc()">
+        <div>
+          <div class="condition-label">벽면 프라이머/실러 도포</div>
+          <div class="condition-desc">도배공 — 누수 피해 세대 하지 처리 필수 (면적 기반)</div>
+        </div>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-mold" onchange="recalc()">
+        <div>
+          <div class="condition-label">곰팡이 있음</div>
+          <div class="condition-desc">약품 처리 항목 추가</div>
+        </div>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-insulation" onchange="recalc()">
+        <div>
+          <div class="condition-label">결로 있음 (단열 필요)</div>
+          <div class="condition-desc">단열 시공 항목 추가</div>
+        </div>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="cond-waste" checked onchange="recalc()">
+        <div>
+          <div class="condition-label">폐기물 처리 필요</div>
+          <div class="condition-desc">스티커 + 운반비 포함</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 추가 옵션 -->
+    <div class="condition-section">
+      <div class="condition-title">추가 옵션</div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="opt-artwall" onchange="recalc()">
+        <div>
+          <div class="condition-label">아트월/포인트 벽지</div>
+          <div class="condition-desc">별도 수입벽지 단가 적용</div>
+        </div>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="opt-caulk" checked onchange="recalc()">
+        <div>
+          <div class="condition-label">몰딩 코킹</div>
+          <div class="condition-desc">실리콘 자재 + 도배공 0.2품</div>
+        </div>
+      </div>
+      <div class="condition-item">
+        <input class="condition-check" type="checkbox" id="opt-outlet" checked onchange="recalc()">
+        <div>
+          <div class="condition-label">콘센트/스위치 복원</div>
+          <div class="condition-desc">보통인부 0.1품</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 견적 생성 버튼 -->
+    <button class="btn btn-primary btn-full btn-lg mt-20" onclick="generateEstimate()">
+      견적 자동 생성
+    </button>
+
+    <div style="height:32px;"></div>
+  </div>
+
+  <script src="../common/trades/unit-prices.js"></script>
+  <script src="../common/components.js"></script>
+  <script src="../common/tab-bar.js"></script>
+  <script>
+    // 탭 바
+    renderTabBar('estimate', '도배');
+
+    // 기능 패널
+    LTI.renderFeaturePanel({
+      target: '.page-tab',
+      features: [
+        { text: '기준단가 설정 링크 — 년도별 노임·자재·품셈 단가 관리' },
+        { text: '방 관리 — 방 추가·삭제·이름 편집 (기본 3개, 최소 1개 유지)' },
+        { text: '★ 천장 = 직사각형 쪼개기 — 기본 1개, ㄴ자 거실은 2~4개로 분할 입력' },
+        { text: '★ 벽면 = 전체 길이 직접 입력 — 줄자로 벽 한바퀴 m 입력 → 높이 곱해서 면적 자동' },
+        { text: '★ 천장/벽면 개별 선택 — 천장만, 벽면만, 둘 다 가능' },
+        { text: '선택한 부위마다 실크/합지 벽지 종류 선택 (기본 실크)' },
+        { text: '★ 실크 벽지 → 풀먹임 숙성으로 시공량 감소 자동 적용 (벽면 46→35㎡/일, 천장 35→27㎡/일)' },
+        { text: '면적 합계 자동 집계 — 실크/합지별, 천장/벽면별 구분' },
+        { text: '현장 조건 7개 — 보양·가구이동·철거·프라이머·곰팡이·결로·폐기물' },
+        { text: '추가 옵션 — 아트월/포인트 벽지, 몰딩 코킹, 콘센트/스위치 복원' },
+        { text: '프라이머/실러 — 누수 피해 세대 하지 처리 필수 (면적 기반 자재비 별도 산출)' },
+        { text: '자재비 = 면적 × 단가 × 1.1(10% 로스) — 표준품셈 기준' },
+        { text: '견적 자동 생성 → 도배공+보통인부 품수 분리 산출 + 자재비 + VAT = 총합계' },
+      ],
+    });
+
+    // ===== 방 데이터 =====
+    // ceilingAreas: 천장 직사각형 배열 [{w, d}, ...]
+    // wallLength: 벽면 전체 길이 (m)
+    let rooms = [
+      { name: '거실', h: 2.4, ceiling: false, ceilingType: 'silk', ceilingAreas: [{w:0, d:0}], wall: false, wallType: 'silk', wallLength: 0 },
+      { name: '안방', h: 2.4, ceiling: false, ceilingType: 'silk', ceilingAreas: [{w:0, d:0}], wall: false, wallType: 'silk', wallLength: 0 },
+      { name: '작은방', h: 2.4, ceiling: false, ceilingType: 'silk', ceilingAreas: [{w:0, d:0}], wall: false, wallType: 'silk', wallLength: 0 },
+    ];
+
+    function fmtN(n) { return n.toLocaleString('ko-KR'); }
+    function fmtF(n) { return n % 1 === 0 ? n.toString() : n.toFixed(2); }
+
+    // 천장 면적 합계
+    function ceilingTotal(r) {
+      return r.ceilingAreas.reduce((s, a) => s + a.w * a.d, 0);
+    }
+    // 벽면적
+    function wallTotal(r) {
+      return r.wallLength * r.h;
+    }
+
+    // ===== 방 렌더링 =====
+    function renderRooms() {
+      const list = document.getElementById('room-list');
+      list.innerHTML = rooms.map((r, i) => {
+        const cArea = ceilingTotal(r);
+        const wArea = wallTotal(r);
+        const canAddCeiling = r.ceilingAreas.length < 4;
+
+        // 천장 영역 입력 행들
+        const ceilingRows = r.ceilingAreas.map((a, j) => `
+          <div class="room-dims" style="margin-left:32px;">
+            <span class="dim-label" style="min-width:16px; color:var(--gray-400); font-size:0.8125rem;">${j+1}</span>
+            <input class="dim-input" type="text" inputmode="decimal" value="${a.w}"
+              onfocus="this.select()" onchange="onCeilingDim(${i},${j},'w',this.value)" ${!r.ceiling?'disabled':''}>
+            <span class="dim-x">&times;</span>
+            <input class="dim-input" type="text" inputmode="decimal" value="${a.d}"
+              onfocus="this.select()" onchange="onCeilingDim(${i},${j},'d',this.value)" ${!r.ceiling?'disabled':''}>
+            <span class="dim-label">m</span>
+            <span style="font-size:0.8125rem; color:var(--gray-400); margin-left:4px;">= ${fmtF(a.w*a.d)}㎡</span>
+            ${r.ceilingAreas.length > 1 ? '<button class="room-delete" style="width:24px;height:24px;font-size:0.875rem;" onclick="removeCeilingArea('+i+','+j+')" title="삭제">&times;</button>' : ''}
+          </div>
+        `).join('');
+
+        return `
+        <div class="room-card ${(r.ceiling || r.wall) ? 'active' : ''}" id="room-${i}">
+          <div class="room-top">
+            <input class="room-name-input" type="text" value="${r.name}"
+              onchange="rooms[${i}].name=this.value">
+            <button class="room-delete" onclick="deleteRoom(${i})" title="삭제">&#10005;</button>
+          </div>
+          <!-- 천장 -->
+          <div class="room-options">
+            <div class="room-option-row ${!r.ceiling ? 'disabled' : ''}">
+              <input class="room-option-check" type="checkbox" ${r.ceiling ? 'checked' : ''}
+                onchange="rooms[${i}].ceiling=this.checked; renderRooms();">
+              <span class="room-option-label">천장</span>
+              <span class="room-option-area" style="font-weight:700; color:var(--primary);">${r.ceiling && cArea > 0 ? fmtF(cArea)+'㎡' : ''}</span>
+            </div>
+          </div>
+          ${r.ceiling ? '<div style="margin-left:32px; margin-bottom:6px;"><div class="wallpaper-select" style="margin-left:0;"><button class="wp-btn '+(r.ceilingType==='silk'?'selected':'')+'" onclick="rooms['+i+'].ceilingType=\'silk\'; renderRooms();">실크</button><button class="wp-btn '+(r.ceilingType==='hapji'?'selected':'')+'" onclick="rooms['+i+'].ceilingType=\'hapji\'; renderRooms();">합지</button></div></div>' : ''}
+          ${r.ceiling ? ceilingRows : ''}
+          ${r.ceiling && canAddCeiling ? '<button style="margin:6px 0 12px 32px; border:1.5px dashed var(--gray-300); border-radius:6px; background:none; color:var(--gray-400); font-size:0.8125rem; padding:4px 12px; cursor:pointer;" onclick="addCeilingArea('+i+')">+ 영역 추가</button>' : ''}
+
+          <!-- 벽면 -->
+          <div class="room-options" style="margin-top:${r.ceiling ? '4px' : '0'};">
+            <div class="room-option-row ${!r.wall ? 'disabled' : ''}">
+              <input class="room-option-check" type="checkbox" ${r.wall ? 'checked' : ''}
+                onchange="rooms[${i}].wall=this.checked; renderRooms();">
+              <span class="room-option-label">벽면</span>
+              <span class="room-option-area" style="font-weight:700; color:var(--primary);">${r.wall && wArea > 0 ? fmtF(wArea)+'㎡' : ''}</span>
+            </div>
+          </div>
+          ${r.wall ? '<div style="margin-left:32px; margin-bottom:6px;"><div class="wallpaper-select" style="margin-left:0;"><button class="wp-btn '+(r.wallType==='silk'?'selected':'')+'" onclick="rooms['+i+'].wallType=\'silk\'; renderRooms();">실크</button><button class="wp-btn '+(r.wallType==='hapji'?'selected':'')+'" onclick="rooms['+i+'].wallType=\'hapji\'; renderRooms();">합지</button></div></div>' : ''}
+          ${r.wall ? '<div class="room-dims" style="margin-left:32px;"><span class="dim-label">벽 전체 길이</span><input class="dim-input" type="text" inputmode="decimal" value="'+r.wallLength+'" style="width:80px;" onfocus="this.select()" onchange="rooms['+i+'].wallLength=parseFloat(this.value)||0; renderRooms();"><span class="dim-label">m</span></div><div class="room-dims" style="margin-left:32px;"><span class="dim-label">높이</span><input class="dim-input" type="text" inputmode="decimal" value="'+r.h+'" style="width:72px;" onfocus="this.select()" onchange="rooms['+i+'].h=parseFloat(this.value)||0; renderRooms();"><span class="dim-label">m</span><span style="font-size:0.8125rem; color:var(--gray-400); margin-left:8px;">벽면적 = '+fmtF(r.wallLength)+' × '+r.h+' = <strong>'+fmtF(wArea)+'㎡</strong></span></div>' : ''}
+        </div>`;
+      }).join('');
+      recalc();
+    }
+
+    // 천장 영역 조작
+    function onCeilingDim(i, j, key, val) {
+      rooms[i].ceilingAreas[j][key] = parseFloat(val) || 0;
+      renderRooms();
+    }
+    function addCeilingArea(i) {
+      if (rooms[i].ceilingAreas.length >= 4) return;
+      rooms[i].ceilingAreas.push({w: 2.0, d: 2.0});
+      renderRooms();
+    }
+    function removeCeilingArea(i, j) {
+      if (rooms[i].ceilingAreas.length <= 1) return;
+      rooms[i].ceilingAreas.splice(j, 1);
+      renderRooms();
+    }
+
+    function addRoom() {
+      rooms.push({ name: '방' + (rooms.length + 1), h: 2.4, ceiling: false, ceilingType: 'silk', ceilingAreas: [{w:0, d:0}], wall: false, wallType: 'silk', wallLength: 0 });
+      renderRooms();
+      LTI.toast('방이 추가되었습니다');
+    }
+
+    function deleteRoom(i) {
+      if (rooms.length <= 1) { LTI.toast('최소 1개 방이 필요합니다'); return; }
+      const name = rooms[i].name;
+      LTI.confirm({
+        title: '방 삭제',
+        message: '<strong>' + name + '</strong>을(를) 삭제하시겠습니까?',
+        confirmText: '삭제',
+        cancelText: '취소',
+        onConfirm: function() {
+          rooms.splice(i, 1);
+          renderRooms();
+          LTI.toast(name + ' 삭제됨');
+        }
+      });
+    }
+
+    // ===== 면적 집계 =====
+    function recalc() {
+      let ceilingSilk = 0, ceilingHapji = 0;
+      let wallSilk = 0, wallHapji = 0;
+
+      rooms.forEach(r => {
+        const cArea = ceilingTotal(r);
+        const wArea = wallTotal(r);
+        if (r.ceiling) {
+          if (r.ceilingType === 'silk') ceilingSilk += cArea;
+          else ceilingHapji += cArea;
+        }
+        if (r.wall) {
+          if (r.wallType === 'silk') wallSilk += wArea;
+          else wallHapji += wArea;
+        }
+      });
+
+      const totalCeiling = ceilingSilk + ceilingHapji;
+      const totalWall = wallSilk + wallHapji;
+      const totalSilk = ceilingSilk + wallSilk;
+      const totalHapji = ceilingHapji + wallHapji;
+      const totalArea = totalCeiling + totalWall;
+
+      document.getElementById('area-summary').innerHTML = `
+        <div class="area-summary-title">면적 합계 (자동)</div>
+        <div class="area-row">
+          <span class="area-label">천장 면적</span>
+          <span class="area-value">${fmtF(totalCeiling)}㎡</span>
+        </div>
+        <div class="area-detail" style="text-align:right; margin-bottom:6px;">
+          실크 ${fmtF(ceilingSilk)}㎡ + 합지 ${fmtF(ceilingHapji)}㎡
+        </div>
+        <div class="area-row">
+          <span class="area-label">벽면 면적</span>
+          <span class="area-value">${fmtF(totalWall)}㎡</span>
+        </div>
+        <div class="area-detail" style="text-align:right; margin-bottom:6px;">
+          실크 ${fmtF(wallSilk)}㎡ + 합지 ${fmtF(wallHapji)}㎡
+        </div>
+        <div style="border-top:1.5px solid var(--gray-200); margin:10px 0;"></div>
+        <div class="area-row">
+          <span class="area-label">총 시공 면적</span>
+          <span class="area-value primary">${fmtF(totalArea)}㎡</span>
+        </div>
+        <div class="area-detail" style="text-align:right;">
+          실크 총 ${fmtF(totalSilk)}㎡ · 합지 총 ${fmtF(totalHapji)}㎡
+        </div>
+      `;
+    }
+
+    // ===== 견적 자동 생성 =====
+    function generateEstimate() {
+      // 면적 체크
+      let hasArea = false;
+      rooms.forEach(r => { if (r.ceiling || r.wall) hasArea = true; });
+      if (!hasArea) { LTI.toast('최소 1개 방의 천장 또는 벽면을 선택하세요'); return; }
+
+      // 면적 집계
+      let ceilingSilk = 0, ceilingHapji = 0, wallSilk = 0, wallHapji = 0;
+      rooms.forEach(r => {
+        const cArea = ceilingTotal(r);
+        const wArea = wallTotal(r);
+        if (r.ceiling) { if (r.ceilingType === 'silk') ceilingSilk += cArea; else ceilingHapji += cArea; }
+        if (r.wall) { if (r.wallType === 'silk') wallSilk += wArea; else wallHapji += wArea; }
+      });
+      const totalSilk = ceilingSilk + wallSilk;
+      const totalHapji = ceilingHapji + wallHapji;
+      const totalArea = totalSilk + totalHapji;
+      const totalCeiling = ceilingSilk + ceilingHapji;
+      const totalWall = wallSilk + wallHapji;
+      const hasProtect = document.getElementById('cond-protect').checked;
+      const hasObstacle = document.getElementById('cond-obstacle').checked;
+      const hasPrimer = document.getElementById('cond-primer').checked;
+      const hasMold = document.getElementById('cond-mold').checked;
+      const hasDemolish = document.getElementById('cond-demolish').checked;
+      const hasWaste = document.getElementById('cond-waste').checked;
+      const hasInsulation = document.getElementById('cond-insulation').checked;
+      const hasCaulk = document.getElementById('opt-caulk').checked;
+      const hasOutlet = document.getElementById('opt-outlet').checked;
+
+      // 단가 참조
+      const obstacleFactor = hasObstacle ? 0.85 : 1;
+      const lossRate = 1 + (UNIT_PRICES.productivity.find(p=>p.id==='loss').value / 100);
+      const laborDobae = UNIT_PRICES.labor.find(l=>l.id==='dobae').price;
+      const laborGeneral = UNIT_PRICES.labor.find(l=>l.id==='general').price;
+      const matSilk = UNIT_PRICES.material.find(m=>m.id==='silk').price;
+      const matHapji = UNIT_PRICES.material.find(m=>m.id==='hapji').price;
+      const matChobae = UNIT_PRICES.material.find(m=>m.id==='chobae').price;
+      const matSub = UNIT_PRICES.material.find(m=>m.id==='sub').price;
+
+      // 도배공 품수 — 실크/합지 시공량 분리 적용 (실크는 풀먹임 숙성으로 시공량 감소)
+      const prodWallHapji = UNIT_PRICES.productivity.find(p=>p.id==='replace-wall').value;        // 합지 46㎡/일
+      const prodWallSilk = UNIT_PRICES.productivity.find(p=>p.id==='replace-wall-silk').value;    // 실크 35㎡/일
+      const prodCeilHapji = UNIT_PRICES.productivity.find(p=>p.id==='replace-ceiling').value;     // 합지 35㎡/일
+      const prodCeilSilk = UNIT_PRICES.productivity.find(p=>p.id==='replace-ceiling-silk').value; // 실크 27㎡/일
+      const removeWall = UNIT_PRICES.productivity.find(p=>p.id==='remove-wall').value;
+      const removeCeiling = UNIT_PRICES.productivity.find(p=>p.id==='remove-ceiling').value;
+
+      // 벽면: 실크/합지 각각 시공량으로 품수 산출
+      let wallPoomSilk = wallSilk > 0 ? Math.round((wallSilk / (prodWallSilk * obstacleFactor)) * 10) / 10 : 0;
+      let wallPoomHapji = wallHapji > 0 ? Math.round((wallHapji / (prodWallHapji * obstacleFactor)) * 10) / 10 : 0;
+      let wallPoom = wallPoomSilk + wallPoomHapji;
+
+      // 천장: 실크/합지 각각 시공량으로 품수 산출
+      let ceilPoomSilk = ceilingSilk > 0 ? Math.round((ceilingSilk / (prodCeilSilk * obstacleFactor)) * 10) / 10 : 0;
+      let ceilPoomHapji = ceilingHapji > 0 ? Math.round((ceilingHapji / (prodCeilHapji * obstacleFactor)) * 10) / 10 : 0;
+      let ceilingPoom = ceilPoomSilk + ceilPoomHapji;
+      let demolishPoom = hasDemolish ? Math.round((totalWall * removeWall + totalCeiling * removeCeiling) * 10) / 10 : 0;
+      let chobaePoom = totalArea > 0 ? 0.5 : 0;
+      let puttyPoom = 0.3;
+      let caulkPoom = hasCaulk ? 0.2 : 0;
+      let primerPoom = hasPrimer && totalArea > 0 ? Math.round(totalArea * 0.005 * 10) / 10 : 0;
+      // 실크 풀먹임은 별도 항목이 아닌 시공량 감소로 반영됨 (합지 46→실크 35㎡/일)
+      let totalDobaePoom = wallPoom + ceilingPoom + demolishPoom + chobaePoom + puttyPoom + caulkPoom + primerPoom;
+      totalDobaePoom = Math.round(totalDobaePoom * 10) / 10;
+
+      let dobaeLabor = Math.round(totalDobaePoom * laborDobae);
+
+      // 자재비
+      let silkMat = Math.round(totalSilk * lossRate * matSilk);
+      let hapjiMat = Math.round(totalHapji * lossRate * matHapji);
+      let chobaeMat = Math.round(totalArea * lossRate * matChobae);
+      let primerMat = hasPrimer && totalArea > 0 ? Math.round(totalArea * 0.1 * lossRate * 15000) : 0; // 프라이머 0.1L/㎡ × @15,000원/L
+      let totalMat = silkMat + hapjiMat + chobaeMat + matSub + primerMat;
+
+      // 보양 (면적 기반 — 표준품셈)
+      const protectPoomRate = UNIT_PRICES.productivity.find(p=>p.id==='protect-floor').value;
+      const protectMatRate = UNIT_PRICES.productivity.find(p=>p.id==='protect-mat').value;
+      let protectPoom = hasProtect ? Math.round(totalArea * protectPoomRate * 10) / 10 : 0;
+      let protectMatCost = hasProtect ? Math.round(totalArea * protectMatRate) : 0;
+
+      // 보통인부
+      const furnitureMovePoom = UNIT_PRICES.productivity.find(p=>p.id==='furniture-move').value;
+      let generalPoom = 0;
+      if (hasProtect) generalPoom += protectPoom;
+      if (hasObstacle) generalPoom += furnitureMovePoom;
+      if (hasMold) generalPoom += 0.3;
+      if (hasWaste) generalPoom += 0.5;
+      if (hasOutlet) generalPoom += 0.1;
+      generalPoom = Math.round(generalPoom * 10) / 10;
+      let generalLabor = Math.round(generalPoom * laborGeneral) + protectMatCost;
+
+      // 기타
+      let etcCost = 0;
+      if (hasMold) etcCost += UNIT_PRICES.etc.find(e=>e.id==='mold-chemical').price;
+      if (hasWaste) {
+        etcCost += UNIT_PRICES.etc.find(e=>e.id==='waste-sticker').price;
+        etcCost += UNIT_PRICES.etc.find(e=>e.id==='waste-transport').price;
+      }
+
+      let supply = dobaeLabor + totalMat + generalLabor + etcCost;
+      let vat = Math.round(supply * 0.1);
+      let total = supply + vat;
+
+      // 요약 메시지 생성
+      const summary = `
+        <div style="text-align:left; font-size:0.9375rem; line-height:1.8;">
+          <strong>도배공 작업</strong><br>
+          &nbsp; 품수: ${totalDobaePoom}품 × @${fmtN(laborDobae)}원 = <strong>${fmtN(dobaeLabor)}원</strong><br>
+          <span style="font-size:0.8125rem; color:#888;">
+          &nbsp; 벽면${wallPoomSilk > 0 ? '(실크' + wallPoomSilk + '+' : '('}${wallPoomHapji > 0 ? '합지' + wallPoomHapji : ''}${wallPoom > 0 ? ')=' + wallPoom + '품' : ''} + 천장${ceilPoomSilk > 0 ? '(실크' + ceilPoomSilk + '+' : '('}${ceilPoomHapji > 0 ? '합지' + ceilPoomHapji : ''}${ceilingPoom > 0 ? ')=' + ceilingPoom + '품' : ''}${demolishPoom > 0 ? ' + 철거 ' + demolishPoom + '품' : ''} + 초배 ${chobaePoom}품 + 퍼티 ${puttyPoom}품${caulkPoom > 0 ? ' + 코킹 ' + caulkPoom + '품' : ''}${primerPoom > 0 ? ' + 프라이머 ' + primerPoom + '품' : ''}
+          </span><br>
+          <span style="font-size:0.75rem; color:var(--info);">
+          &nbsp; ※ 실크벽지: 풀먹임 숙성 시간으로 시공량 감소 적용 (벽면 35㎡/일, 천장 27㎡/일)
+          </span><br><br>
+          <strong>자재비</strong><br>
+          &nbsp; ${totalSilk > 0 ? '실크 ' + fmtF(totalSilk) + '㎡×' + fmtN(matSilk) + '×1.1 = ' + fmtN(silkMat) + '원<br>&nbsp; ' : ''}${totalHapji > 0 ? '합지 ' + fmtF(totalHapji) + '㎡×' + fmtN(matHapji) + '×1.1 = ' + fmtN(hapjiMat) + '원<br>&nbsp; ' : ''}초배지+부자재 = ${fmtN(chobaeMat + matSub)}원<br>
+          &nbsp; 소계: <strong>${fmtN(totalMat)}원</strong><br><br>
+          <strong>보통인부 작업</strong><br>
+          &nbsp; 품수: ${generalPoom}품 × @${fmtN(laborGeneral)}원 = <strong>${fmtN(Math.round(generalPoom * laborGeneral))}원</strong><br>
+          <span style="font-size:0.8125rem; color:#888;">
+          &nbsp; ${hasProtect ? '보양 ' + protectPoom + '품(' + fmtF(totalArea) + '㎡×' + protectPoomRate + ')' : ''}${hasProtect && hasObstacle ? ' + ' : ''}${hasObstacle ? '가구이동 ' + furnitureMovePoom + '품' : ''}${(hasProtect||hasObstacle) && hasMold ? ' + ' : ''}${hasMold ? '곰팡이 0.3품' : ''}${(hasProtect||hasObstacle||hasMold) && hasWaste ? ' + ' : ''}${hasWaste ? '폐기물 0.5품' : ''}${(hasProtect||hasObstacle||hasMold||hasWaste) && hasOutlet ? ' + ' : ''}${hasOutlet ? '콘센트 0.1품' : ''}
+          </span><br>
+          ${hasProtect ? '&nbsp; 보양 자재비: ' + fmtF(totalArea) + '㎡ × @' + fmtN(protectMatRate) + ' = <strong>' + fmtN(protectMatCost) + '원</strong><br>' : ''}
+          &nbsp; 소계: <strong>${fmtN(generalLabor)}원</strong><br><br>
+          ${etcCost > 0 ? '<strong>기타</strong> (약품·폐기물): <strong>' + fmtN(etcCost) + '원</strong><br><br>' : ''}
+          <div style="border-top:1.5px solid #e8e8e0; padding-top:8px; margin-top:4px;">
+            공급가액: ${fmtN(supply)}원<br>
+            부가세: ${fmtN(vat)}원<br>
+            <span style="font-size:1.125rem; color:#c8871e;"><strong>총합계: ${fmtN(total)}원</strong></span>
+          </div>
+        </div>
+      `;
+
+      LTI.confirm({
+        title: '견적 자동 생성 결과',
+        message: summary,
+        confirmText: '확인',
+        cancelText: '수정하기',
+        onConfirm: function() {
+          LTI.toast('견적서가 생성되었습니다');
+        }
+      });
+    }
+
+    renderRooms();
+  </script>
+</body>
+</html>
