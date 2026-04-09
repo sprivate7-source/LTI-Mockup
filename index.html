@@ -2,10 +2,65 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=02_피해복구/견적_총견적.html">
-  <title>LTI 목업</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — 화면 목록</title>
+  <link rel="stylesheet" href="common/style.css">
 </head>
 <body>
-  <p><a href="02_피해복구/견적_총견적.html">LTI 견적 시스템 목업으로 이동</a></p>
+
+  <div class="header">
+    <div class="header-action"></div>
+    <div class="header-title">LTI 목업 화면 목록</div>
+    <div class="header-action"></div>
+  </div>
+
+  <div class="page">
+
+    <div class="alert alert-info mb-20">
+      <strong>LTI</strong> (LeakTube Insurance) — 누수 피해복구 보험 처리 시스템<br>
+      <span class="text-sm">12인치 태블릿 기준 | 현장 고객 대면용 화면</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">P3 — UI 목업 목록</div>
+
+      <!-- #0 공통 셋업 -->
+      <div class="list-item" style="cursor: default;">
+        <div class="list-item-icon" style="background: var(--success-bg); color: var(--success);">0</div>
+        <div class="list-item-body">
+          <div class="list-item-title">공통 셋업</div>
+          <div class="list-item-desc">style.css + components.js + index.html</div>
+        </div>
+        <span class="badge badge-success">완료</span>
+      </div>
+
+      <!-- #1 현장 상세 -->
+      <a class="list-item" href="01_현장상세.html">
+        <div class="list-item-icon" style="background: var(--primary-bg); color: var(--primary);">1</div>
+        <div class="list-item-body">
+          <div class="list-item-title">현장 상세 (분기점)</div>
+          <div class="list-item-desc">기존 현장에 "아랫집 피해복구" 진입 버튼 추가</div>
+        </div>
+        <span class="badge badge-success">완료</span>
+      </a>
+
+      <!-- #2 피해복구 (메인 탭 3개 + 보험처리 서브탭 5개) -->
+      <a class="list-item" href="02_피해복구/피해현장.html">
+        <div class="list-item-icon" style="background: var(--primary-bg); color: var(--primary);">2</div>
+        <div class="list-item-body">
+          <div class="list-item-title">아랫집 피해복구</div>
+          <div class="list-item-desc">피해현장 · 견적 · 보험처리(5개 서브탭: 담당자정보·견적서발송·피해사진·완료확인서·보험청구)</div>
+        </div>
+        <span class="badge badge-primary">제작중</span>
+      </a>
+    </div>
+
+    <div class="text-center text-muted text-sm mt-24" style="padding-bottom: 40px;">
+      LTI (LeakTube Insurance) &mdash; 목업 v0.1
+    </div>
+
+  </div>
+
+  <script src="common/components.js"></script>
 </body>
 </html>

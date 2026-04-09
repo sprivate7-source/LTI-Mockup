@@ -2,10 +2,578 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=02_피해복구/피해현장.html">
-  <title>현장 상세</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LTI 목업 — #1 현장 상세 (분기점)</title>
+  <link rel="stylesheet" href="common/style.css">
+  <style>
+    /* --- 이 페이지 전용 스타일 --- */
+
+    /* 현장 정보 영역 */
+    .site-info {
+      padding: 20px 0;
+    }
+    .site-address {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .site-address-icon {
+      width: 24px;
+      height: 24px;
+      color: var(--primary);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .site-address-main {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-800);
+    }
+    .site-address-detail {
+      font-size: 0.9375rem;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+    .site-phone {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      font-size: 1.0625rem;
+      font-weight: 500;
+      color: var(--gray-700);
+    }
+    .site-phone-icon {
+      width: 22px;
+      height: 22px;
+      color: var(--primary);
+    }
+    .site-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .site-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--gray-100);
+      font-size: 0.9375rem;
+      color: var(--gray-600);
+    }
+    .site-tag svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* 기존 버튼들 */
+    .voice-btn {
+      width: 100%;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 2px dashed rgba(200,135,30,0.4);
+      background: rgba(200,135,30,0.05);
+      border-radius: 12px;
+      font-size: 1.0625rem;
+      font-weight: 600;
+      color: var(--primary);
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .voice-btn:active {
+      background: rgba(200,135,30,0.12);
+    }
+    .voice-btn svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .marketing-btn {
+      width: 100%;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #facc15;
+      border-radius: 12px;
+      border: none;
+      font-size: 1.0625rem;
+      font-weight: 700;
+      color: #713f12;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .marketing-btn:active {
+      background: #eab308;
+    }
+    .marketing-btn svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    /* ★ 신규: 아랫집 피해복구 버튼 */
+    .lti-entry-section {
+      margin: 8px 0 16px;
+      padding: 20px;
+      background: linear-gradient(135deg, #fef3e2 0%, #fff8ee 100%);
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .lti-entry-section::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 80px;
+      height: 80px;
+      background: rgba(200,135,30,0.08);
+      border-radius: 50%;
+    }
+    .lti-entry-new-badge {
+      display: inline-block;
+      background: var(--danger);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+    .lti-entry-title {
+      font-size: 1.1875rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 6px;
+    }
+    .lti-entry-desc {
+      font-size: 0.9375rem;
+      color: var(--gray-500);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .lti-entry-btn {
+      width: 100%;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.125rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(200,135,30,0.3);
+      transition: all 0.15s;
+    }
+    .lti-entry-btn:active {
+      background: var(--primary-dark);
+      transform: scale(0.97);
+    }
+    .lti-entry-btn svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* 아랫집 진행 중 상태 카드 */
+    .lti-status-card {
+      margin: 8px 0 16px;
+      padding: 16px 20px;
+      background: white;
+      border: 1.5px solid var(--primary-light);
+      border-radius: 14px;
+      cursor: pointer;
+    }
+    .lti-status-card:active {
+      background: var(--primary-bg);
+    }
+    .lti-status-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .lti-status-title {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      color: var(--gray-800);
+    }
+    .lti-status-badge {
+      font-size: 0.8125rem;
+    }
+    .lti-progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--gray-200);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .lti-progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .lti-progress-text {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+    }
+
+    /* 문서 섹션 */
+    .doc-section-title {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      padding: 16px 0 12px;
+    }
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--gray-100);
+      cursor: pointer;
+    }
+    .doc-item:last-child {
+      border-bottom: none;
+    }
+    .doc-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 1.125rem;
+      flex-shrink: 0;
+    }
+    .doc-item-body {
+      flex: 1;
+    }
+    .doc-item-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .doc-item-date {
+      font-size: 0.8125rem;
+      color: var(--gray-400);
+      margin-top: 2px;
+    }
+    .doc-add-btn {
+      width: 100%;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 2px dashed var(--gray-300);
+      background: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .doc-add-btn:active {
+      background: var(--gray-50);
+    }
+
+    /* SVG 아이콘 공통 */
+    .icon { display: inline-block; vertical-align: middle; }
+
+    /* 승인 필요 모달 */
+    .approval-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200;
+      padding: 24px;
+    }
+    .approval-modal {
+      background: white;
+      border-radius: 20px;
+      padding: 32px 28px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+      text-align: center;
+    }
+    .approval-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 20px;
+      background: var(--warning-bg);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .approval-icon svg {
+      width: 32px;
+      height: 32px;
+      color: var(--warning);
+    }
+    .approval-title {
+      font-size: 1.375rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 12px;
+    }
+    .approval-desc {
+      font-size: 1rem;
+      color: var(--gray-500);
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .approval-highlight {
+      background: var(--gray-100);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 16px 0 24px;
+      font-size: 0.9375rem;
+      color: var(--gray-600);
+      line-height: 1.6;
+    }
+    .approval-highlight strong {
+      color: var(--primary);
+    }
+  </style>
 </head>
 <body>
-  <p><a href="02_피해복구/피해현장.html">피해현장으로 이동</a></p>
+
+  <div class="header">
+    <a href="index.html" class="header-back" aria-label="뒤로가기">&#8249;</a>
+    <div class="header-title">현장 상세</div>
+    <div class="header-action">
+      <button style="background:none; border:none; cursor:pointer; padding:8px; border-radius:50%; color:var(--primary);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="page has-bottom-fixed">
+
+    <!-- [기능 보기] 패널 — JS로 삽입 -->
+
+    <!-- ===== 현장 정보 (기존과 동일) ===== -->
+    <div class="site-info">
+      <div class="site-address">
+        <svg class="site-address-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div>
+          <div class="site-address-main">서울특별시 강남구 테헤란로 123</div>
+          <div class="site-address-detail">래미안아파트 102동 1504호</div>
+        </div>
+      </div>
+      <div class="site-phone">
+        <svg class="site-phone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        010-1234-5678
+      </div>
+      <div class="site-tags">
+        <span class="site-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
+          아파트
+        </span>
+        <span class="site-tag">화장실 천장</span>
+        <span class="site-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          2026.04.08
+        </span>
+      </div>
+    </div>
+
+    <!-- 음성으로 수정 (기존) -->
+    <button class="voice-btn" onclick="LTI.toast('목업: 음성 녹음 기능')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+      음성으로 수정
+    </button>
+
+    <!-- 마케팅 요청 (기존) -->
+    <button class="marketing-btn" onclick="LTI.toast('목업: 마케팅 요청 화면으로 이동')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+      마케팅 요청
+    </button>
+
+    <!-- ★★★ 신규: 아랫집 피해복구 진입 섹션 ★★★ -->
+    <div class="lti-entry-section">
+      <span class="lti-entry-new-badge">NEW</span>
+      <div class="lti-entry-title">아랫집 피해복구 (보험 처리)</div>
+      <div class="lti-entry-desc">
+        이 현장의 아랫집 누수 피해를 복구하고,<br>
+        보험 청구까지 한번에 처리합니다.
+      </div>
+      <button class="lti-entry-btn" onclick="LTI.toast('목업: 피해복구 대시보드(#2)로 이동')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        아랫집 피해복구 시작하기
+      </button>
+    </div>
+
+    <!-- ★ 진행 중일 때 보이는 상태 카드 (예시) ★ -->
+    <div class="lti-status-card" onclick="LTI.toast('목업: 피해복구 대시보드(#2)로 이동')" style="display:none;" id="lti-progress-card">
+      <div class="lti-status-header">
+        <span class="lti-status-title">아랫집 피해복구</span>
+        <span class="badge badge-warning lti-status-badge">견적 작성 중</span>
+      </div>
+      <div class="lti-progress-bar">
+        <div class="lti-progress-fill" style="width: 35%;"></div>
+      </div>
+      <div class="lti-progress-text">위임장 확보 완료 → 견적서 작성 단계</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 문서 섹션 (기존과 동일) -->
+    <div>
+      <div class="doc-section-title">문서 (3건)</div>
+
+      <div class="doc-item" onclick="LTI.toast('목업: 견적서 편집')">
+        <div class="doc-icon" style="background: #e8f0f8; color: #2874a6;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="doc-item-body">
+          <div class="doc-item-title">견적서</div>
+          <div class="doc-item-date">2026.04.08 작성</div>
+        </div>
+        <span style="color:var(--gray-400); font-size:1.25rem;">&#8250;</span>
+      </div>
+
+      <div class="doc-item" onclick="LTI.toast('목업: 소견서 편집')">
+        <div class="doc-icon" style="background: #eaf5ee; color: #2d8a4e;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
+        </div>
+        <div class="doc-item-body">
+          <div class="doc-item-title">소견서</div>
+          <div class="doc-item-date">2026.04.08 작성</div>
+        </div>
+        <span style="color:var(--gray-400); font-size:1.25rem;">&#8250;</span>
+      </div>
+
+      <div class="doc-item" onclick="LTI.toast('목업: 사진대지 편집')">
+        <div class="doc-icon" style="background: #f3e8f9; color: #7b2d8e;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div class="doc-item-body">
+          <div class="doc-item-title">사진대지</div>
+          <div class="doc-item-date">2026.04.08 작성</div>
+        </div>
+        <span style="color:var(--gray-400); font-size:1.25rem;">&#8250;</span>
+      </div>
+
+      <button class="doc-add-btn" onclick="LTI.toast('목업: 문서 추가 메뉴')">
+        + 문서 추가
+      </button>
+    </div>
+
+    <div style="height: 40px;"></div>
+  </div>
+
+  <!-- 하단 고정 버튼 -->
+  <div class="bottom-fixed">
+    <button class="btn btn-primary btn-full btn-lg" onclick="LTI.toast('목업: PDF 통합 공유')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      PDF 통합 공유
+    </button>
+  </div>
+
+  <!-- 승인 필요 모달 (기본 표시) -->
+  <div class="approval-overlay" id="approval-modal" style="display:none;">
+    <div class="approval-modal">
+      <div class="approval-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="approval-title">관리자 승인이 필요합니다</div>
+      <div class="approval-desc">
+        보험처리플로우 기능은 최고관리자의<br>
+        사전 승인이 있어야 사용할 수 있습니다.
+      </div>
+      <div class="approval-highlight">
+        <strong>관리자 페이지</strong>의 사용자 세팅에서<br>
+        <strong>"보험처리 → 승인"</strong>으로 변경해 주세요.
+      </div>
+      <button class="btn btn-primary btn-full" onclick="document.getElementById('approval-modal').style.display='none'">
+        확인
+      </button>
+    </div>
+  </div>
+
+  <script src="common/components.js"></script>
+  <script>
+    // [기능 보기] 패널
+    LTI.renderFeaturePanel({
+      target: '.page',
+      features: [
+        { text: '기존 현장 정보(주소, 전화번호, 건물유형, 탐지일) 표시 — 기존과 동일', checked: true },
+        { text: '음성으로 수정 버튼 — 기존과 동일', checked: true },
+        { text: '마케팅 요청 버튼 — 기존과 동일', checked: true },
+        { text: '문서 목록 + PDF 통합 공유 — 기존과 동일', checked: true },
+        { text: '★ [신규] "아랫집 피해복구" 진입 버튼 — 터치하면 피해복구 대시보드(#2)로 이동' },
+        { text: '★ [신규] 피해복구 진행 중이면 진행 상태 카드로 전환 (진행률 표시)' },
+        { text: '★ [신규] 관리자 승인 필요 — 관리자 페이지에서 "보험처리 → 승인" 해야 사용 가능' },
+      ]
+    });
+
+    // 데모 상태: false = 비승인(기본), true = 승인
+    let isApproved = false;
+
+    const entrySection = document.querySelector('.lti-entry-section');
+    const progressCard = document.getElementById('lti-progress-card');
+    const approvalModal = document.getElementById('approval-modal');
+
+    document.querySelector('.lti-entry-btn').addEventListener('click', function(e) {
+      e.stopPropagation();
+
+      if (!isApproved) {
+        // 비승인 상태 → 승인 필요 모달 표시
+        approvalModal.style.display = 'flex';
+        return;
+      }
+
+      // 승인 상태 → 시작 확인
+      LTI.confirm({
+        title: '아랫집 피해복구 시작',
+        message: '이 현장의 아랫집 피해복구를 시작하시겠습니까?<br><br>아랫집 정보 입력부터 보험 청구까지 단계별로 안내합니다.',
+        confirmText: '시작하기',
+        cancelText: '나중에',
+        onConfirm: function() {
+          window.location.href = '02_피해복구/피해현장.html';
+        }
+      });
+    });
+
+    // 데모용: 페이지 하단에 승인 상태 토글 버튼 추가
+    (function() {
+      const toggle = document.createElement('div');
+      toggle.style.cssText = 'position:fixed; bottom:90px; right:20px; z-index:300;';
+      toggle.innerHTML = `
+        <button id="demo-toggle" style="
+          background: var(--gray-700); color: white;
+          padding: 10px 16px; border-radius: 10px; border: none;
+          font-size: 0.8125rem; font-weight: 600; cursor: pointer;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        ">데모: 승인 전환</button>
+      `;
+      document.body.appendChild(toggle);
+
+      document.getElementById('demo-toggle').addEventListener('click', function() {
+        isApproved = !isApproved;
+        LTI.toast(isApproved ? '데모: 승인 상태로 전환됨' : '데모: 비승인 상태로 전환됨');
+        this.textContent = isApproved ? '데모: 비승인 전환' : '데모: 승인 전환';
+      });
+    })();
+  </script>
 </body>
 </html>
